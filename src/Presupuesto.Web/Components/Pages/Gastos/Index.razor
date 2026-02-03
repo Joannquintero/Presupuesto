@@ -1,0 +1,181 @@
+@page "/gastos"
+@using Presupuesto.Application.DTOs
+@using Presupuesto.Application.Services
+@using Presupuesto.Domain.Enums
+@using Presupuesto.Web.Components.Shared
+@inject IGastoService GastoService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Gastos - Control de Presupuesto</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-wallet2 me-2"></i>Mis Gastos
+            </h1>
+        </div>
+        <div class="col-auto">
+            <a href="/gastos/crear" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo Gasto
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Año</label>
+                    <select class="form-select" @bind="filtroAnio" @bind:after="FiltrarGastos">
+                        <option value="">Todos</option>
+                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                        {
+                            <option value="@i">@i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Mes</label>
+                    <select class="form-select" @bind="filtroMes" @bind:after="FiltrarGastos">
+                        <option value="">Todos</option>
+                        @foreach (var mes in meses)
+                        {
+                            <option value="@mes.Key">@mes.Value</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Categoría</label>
+                    <select class="form-select" @bind="filtroCategoria" @bind:after="FiltrarGastos">
+                        <option value="">Todas</option>
+                        @foreach (Categoria cat in Enum.GetValues<Categoria>())
+                        {
+                            <option value="@((int)cat)">@cat.ToString()</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-secondary w-100" @onclick="LimpiarFiltros">
+                        <i class="bi bi-x-circle me-1"></i>Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de gastos -->
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <GastosTable Gastos="gastos" OnEdit="EditarGasto" OnDelete="EliminarGasto" />
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal de confirmación -->
+@if (showDeleteModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" @onclick="() => showDeleteModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro de eliminar este gasto?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => showDeleteModal = false">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<GastoDto> gastos = new();
+    private bool loading = true;
+    private bool showDeleteModal = false;
+    private int gastoIdToDelete;
+
+    private string? filtroAnio;
+    private string? filtroMes;
+    private string? filtroCategoria;
+
+    private readonly Dictionary<int, string> meses = new()
+    {
+        { 1, "Enero" }, { 2, "Febrero" }, { 3, "Marzo" }, { 4, "Abril" },
+        { 5, "Mayo" }, { 6, "Junio" }, { 7, "Julio" }, { 8, "Agosto" },
+        { 9, "Septiembre" }, { 10, "Octubre" }, { 11, "Noviembre" }, { 12, "Diciembre" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Establecer mes y año actual por defecto
+        filtroAnio = DateTime.Now.Year.ToString();
+        filtroMes = DateTime.Now.Month.ToString();
+        await FiltrarGastos();
+    }
+
+    private async Task FiltrarGastos()
+    {
+        loading = true;
+        try
+        {
+            int? anio = string.IsNullOrEmpty(filtroAnio) ? null : int.Parse(filtroAnio);
+            int? mes = string.IsNullOrEmpty(filtroMes) ? null : int.Parse(filtroMes);
+            Categoria? categoria = string.IsNullOrEmpty(filtroCategoria) ? null : (Categoria)int.Parse(filtroCategoria);
+
+            gastos = await GastoService.GetByFilterAsync(anio, mes, categoria);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al filtrar gastos: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        filtroAnio = null;
+        filtroMes = null;
+        filtroCategoria = null;
+        await FiltrarGastos();
+    }
+
+    private void EditarGasto(int id)
+    {
+        Navigation.NavigateTo($"/gastos/editar/{id}");
+    }
+
+    private void EliminarGasto(int id)
+    {
+        gastoIdToDelete = id;
+        showDeleteModal = true;
+    }
+
+    private async Task ConfirmarEliminar()
+    {
+        await GastoService.DeleteAsync(gastoIdToDelete);
+        showDeleteModal = false;
+        await FiltrarGastos();
+    }
+}

@@ -1,0 +1,69 @@
+﻿@page "/"
+
+<PageTitle>Control de Gastos Personales</PageTitle>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">
+            <i class="bi bi-wallet2 me-3"></i>Control de Gastos
+        </h1>
+        <p class="lead text-muted">Administra tus finanzas personales de manera sencilla</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 hover-shadow">
+                <div class="card-body text-center p-4">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="bi bi-list-ul fs-1 text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Ver Gastos</h5>
+                    <p class="card-text text-muted">Consulta y administra todos tus gastos registrados.</p>
+                    <a href="/gastos" class="btn btn-primary">
+                        <i class="bi bi-arrow-right me-1"></i>Ir a Gastos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 hover-shadow">
+                <div class="card-body text-center p-4">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="bi bi-plus-circle fs-1 text-success"></i>
+                    </div>
+                    <h5 class="card-title">Nuevo Gasto</h5>
+                    <p class="card-text text-muted">Registra un nuevo gasto de forma rápida y sencilla.</p>
+                    <a href="/gastos/crear" class="btn btn-success">
+                        <i class="bi bi-plus-lg me-1"></i>Agregar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 hover-shadow">
+                <div class="card-body text-center p-4">
+                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="bi bi-graph-up fs-1 text-info"></i>
+                    </div>
+                    <h5 class="card-title">Resumen</h5>
+                    <p class="card-text text-muted">Visualiza el resumen mensual de tus gastos.</p>
+                    <a href="/gastos/resumen" class="btn btn-info text-white">
+                        <i class="bi bi-bar-chart me-1"></i>Ver Resumen
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>

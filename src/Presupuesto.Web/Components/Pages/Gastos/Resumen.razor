@@ -1,0 +1,242 @@
+@page "/gastos/resumen"
+@using Presupuesto.Application.DTOs
+@using Presupuesto.Application.Services
+@using Presupuesto.Domain.Enums
+@inject IGastoService GastoService
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>Resumen Mensual - Control de Presupuesto</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-graph-up me-2"></i>Resumen Mensual
+            </h1>
+        </div>
+    </div>
+
+    <!-- Selector de mes -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="form-select" @bind="selectedAnio" @bind:after="CargarResumen">
+                                @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col">
+                            <select class="form-select" @bind="selectedMes" @bind:after="CargarResumen">
+                                @foreach (var mes in meses)
+                                {
+                                    <option value="@mes.Key">@mes.Value</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (resumen is not null)
+    {
+        <!-- Cards de resumen -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white shadow">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1 opacity-75">Total del Mes</h6>
+                                <h2 class="mb-0">@resumen.TotalMes.ToString("C2")</h2>
+                            </div>
+                            <i class="bi bi-cash-coin fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white shadow">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1 opacity-75">Categorías</h6>
+                                <h2 class="mb-0">@resumen.GastosPorCategoria.Count</h2>
+                            </div>
+                            <i class="bi bi-tags fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white shadow">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1 opacity-75">Período</h6>
+                                <h2 class="mb-0 text-capitalize">@resumen.MesNombre @resumen.Anio</h2>
+                            </div>
+                            <i class="bi bi-calendar3 fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Gráfica -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Gastos por Categoría</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartCategorias" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de desglose -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Desglose por Categoría</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in resumen.GastosPorCategoria)
+                                {
+                                    var porcentaje = resumen.TotalMes > 0 ? (item.Total / resumen.TotalMes * 100) : 0;
+                                    <tr>
+                                        <td>
+                                            <span class="badge @GetCategoriaBadgeClass(item.Categoria)">
+                                                @item.CategoriaTexto
+                                            </span>
+                                        </td>
+                                        <td class="text-center">@item.Cantidad</td>
+                                        <td class="text-end fw-bold">@item.Total.ToString("C2")</td>
+                                        <td class="text-end">@porcentaje.ToString("F1")%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th>Total</th>
+                                    <th class="text-center">@resumen.GastosPorCategoria.Sum(g => g.Cantidad)</th>
+                                    <th class="text-end text-success">@resumen.TotalMes.ToString("C2")</th>
+                                    <th class="text-end">100%</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            No hay datos para el período seleccionado.
+        </div>
+    }
+</div>
+
+@code {
+    private ResumenMensualDto? resumen;
+    private bool loading = true;
+    private int selectedAnio = DateTime.Now.Year;
+    private int selectedMes = DateTime.Now.Month;
+
+    private readonly Dictionary<int, string> meses = new()
+    {
+        { 1, "Enero" }, { 2, "Febrero" }, { 3, "Marzo" }, { 4, "Abril" },
+        { 5, "Mayo" }, { 6, "Junio" }, { 7, "Julio" }, { 8, "Agosto" },
+        { 9, "Septiembre" }, { 10, "Octubre" }, { 11, "Noviembre" }, { 12, "Diciembre" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarResumen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (resumen is not null && resumen.GastosPorCategoria.Any())
+        {
+            await RenderChart();
+        }
+    }
+
+    private async Task CargarResumen()
+    {
+        loading = true;
+        try
+        {
+            resumen = await GastoService.GetResumenMensualAsync(selectedAnio, selectedMes);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar resumen: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task RenderChart()
+    {
+        if (resumen is null) return;
+
+        var labels = resumen.GastosPorCategoria.Select(g => g.CategoriaTexto).ToArray();
+        var data = resumen.GastosPorCategoria.Select(g => (double)g.Total).ToArray();
+        var colors = resumen.GastosPorCategoria.Select(g => GetCategoriaColor(g.Categoria)).ToArray();
+
+        await JS.InvokeVoidAsync("renderPieChart", "chartCategorias", labels, data, colors);
+    }
+
+    private string GetCategoriaBadgeClass(Categoria categoria) => categoria switch
+    {
+        Categoria.Alimentacion => "bg-success",
+        Categoria.Transporte => "bg-primary",
+        Categoria.Servicios => "bg-info",
+        Categoria.Entretenimiento => "bg-warning text-dark",
+        Categoria.Otros => "bg-secondary",
+        _ => "bg-secondary"
+    };
+
+    private string GetCategoriaColor(Categoria categoria) => categoria switch
+    {
+        Categoria.Alimentacion => "#198754",
+        Categoria.Transporte => "#0d6efd",
+        Categoria.Servicios => "#0dcaf0",
+        Categoria.Entretenimiento => "#ffc107",
+        Categoria.Otros => "#6c757d",
+        _ => "#6c757d"
+    };
+}

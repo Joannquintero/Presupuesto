@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Presupuesto.Application/Presupuesto.Application.csproj" />
+    <Project Path="src/Presupuesto.Domain/Presupuesto.Domain.csproj" />
+    <Project Path="src/Presupuesto.Infrastructure/Presupuesto.Infrastructure.csproj" />
+    <Project Path="src/Presupuesto.Web/Presupuesto.Web.csproj" />
+  </Folder>
+</Solution>

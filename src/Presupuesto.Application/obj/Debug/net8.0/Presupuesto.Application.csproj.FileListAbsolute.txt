@@ -1,0 +1,15 @@
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.csproj.AssemblyReference.cache
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.AssemblyInfoInputs.cache
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.AssemblyInfo.cs
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.csproj.CoreCompileInputs.cache
+C:\Projects\Presupuesto\src\Presupuesto.Application\bin\Debug\net8.0\Presupuesto.Application.deps.json
+C:\Projects\Presupuesto\src\Presupuesto.Application\bin\Debug\net8.0\Presupuesto.Application.dll
+C:\Projects\Presupuesto\src\Presupuesto.Application\bin\Debug\net8.0\Presupuesto.Application.pdb
+C:\Projects\Presupuesto\src\Presupuesto.Application\bin\Debug\net8.0\Presupuesto.Domain.dll
+C:\Projects\Presupuesto\src\Presupuesto.Application\bin\Debug\net8.0\Presupuesto.Domain.pdb
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupue.CE8E5134.Up2Date
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.dll
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\refint\Presupuesto.Application.dll
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.pdb
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\ref\Presupuesto.Application.dll
