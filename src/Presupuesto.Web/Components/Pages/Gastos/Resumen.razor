@@ -118,40 +118,86 @@
                         <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Desglose por Categoría</h5>
                     </div>
                     <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Categoría</th>
-                                    <th class="text-center">Cantidad</th>
-                                    <th class="text-end">Total</th>
-                                    <th class="text-end">%</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in resumen.GastosPorCategoria)
-                                {
-                                    var porcentaje = resumen.TotalMes > 0 ? (item.Total / resumen.TotalMes * 100) : 0;
+
+                        @* ===== Vista Desktop: Tabla clásica ===== *@
+                        <div class="desglose-desktop">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <td>
-                                            <span class="badge @GetCategoriaBadgeClass(item.Categoria)">
-                                                @item.CategoriaTexto
-                                            </span>
-                                        </td>
-                                        <td class="text-center">@item.Cantidad</td>
-                                        <td class="text-end fw-bold">@item.Total.ToString("C2")</td>
-                                        <td class="text-end">@porcentaje.ToString("F1")%</td>
+                                        <th>Categoría</th>
+                                        <th class="text-center">Cantidad</th>
+                                        <th class="text-end">Total</th>
+                                        <th class="text-end">%</th>
                                     </tr>
-                                }
-                            </tbody>
-                            <tfoot class="table-light">
-                                <tr>
-                                    <th>Total</th>
-                                    <th class="text-center">@resumen.GastosPorCategoria.Sum(g => g.Cantidad)</th>
-                                    <th class="text-end text-success">@resumen.TotalMes.ToString("C2")</th>
-                                    <th class="text-end">100%</th>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in resumen.GastosPorCategoria)
+                                    {
+                                        var porcentaje = resumen.TotalMes > 0 ? (item.Total / resumen.TotalMes * 100) : 0;
+                                        <tr>
+                                            <td>
+                                                <span class="badge @GetCategoriaBadgeClass(item.Categoria)">
+                                                    @item.CategoriaTexto
+                                                </span>
+                                            </td>
+                                            <td class="text-center">@item.Cantidad</td>
+                                            <td class="text-end fw-bold">@item.Total.ToString("C2")</td>
+                                            <td class="text-end">@porcentaje.ToString("F1")%</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th>Total</th>
+                                        <th class="text-center">@resumen.GastosPorCategoria.Sum(g => g.Cantidad)</th>
+                                        <th class="text-end text-success">@resumen.TotalMes.ToString("C2")</th>
+                                        <th class="text-end">100%</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        @* ===== Vista Móvil: Tarjetas apiladas ===== *@
+                        <div class="desglose-mobile">
+                            @foreach (var item in resumen.GastosPorCategoria)
+                            {
+                                var porcentaje = resumen.TotalMes > 0 ? (item.Total / resumen.TotalMes * 100) : 0;
+                                <div class="desglose-card">
+                                    <div class="desglose-card-header">
+                                        <span class="badge @GetCategoriaBadgeClass(item.Categoria)">
+                                            @item.CategoriaTexto
+                                        </span>
+                                        <span class="desglose-card-cantidad">
+                                            @item.Cantidad @(item.Cantidad == 1 ? "gasto" : "gastos")
+                                        </span>
+                                    </div>
+                                    <div class="desglose-card-body">
+                                        <span class="desglose-card-total">@item.Total.ToString("C2")</span>
+                                        <span class="desglose-card-pct">@porcentaje.ToString("F1")%</span>
+                                    </div>
+                                    <div class="desglose-bar-track">
+                                        <div class="desglose-bar-fill @GetCategoriaBarClass(item.Categoria)"
+                                             style="width: @porcentaje.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                                    </div>
+                                </div>
+                            }
+                            <!-- Total móvil -->
+                            <div class="desglose-card desglose-card-total-row">
+                                <div class="desglose-card-header">
+                                    <span class="fw-bold text-muted">
+                                        <i class="bi bi-calculator me-1"></i>Total
+                                    </span>
+                                    <span class="desglose-card-cantidad">
+                                        @resumen.GastosPorCategoria.Sum(g => g.Cantidad) gastos
+                                    </span>
+                                </div>
+                                <div class="desglose-card-body">
+                                    <span class="desglose-card-total text-success">@resumen.TotalMes.ToString("C2")</span>
+                                    <span class="desglose-card-pct">100%</span>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -239,4 +285,114 @@
         Categoria.Otros => "#6c757d",
         _ => "#6c757d"
     };
+
+    private string GetCategoriaBarClass(Categoria categoria) => categoria switch
+    {
+        Categoria.Alimentacion => "bar-success",
+        Categoria.Transporte => "bar-primary",
+        Categoria.Servicios => "bar-info",
+        Categoria.Entretenimiento => "bar-warning",
+        Categoria.Otros => "bar-secondary",
+        _ => "bar-secondary"
+    };
 }
+
+<style>
+    /* ===== Visibility toggle ===== */
+    .desglose-mobile {
+        display: none;
+    }
+    .desglose-desktop {
+        display: block;
+    }
+
+    @@media (max-width: 767.98px) {
+        .desglose-desktop {
+            display: none;
+        }
+        .desglose-mobile {
+            display: block;
+            padding: 12px;
+        }
+    }
+
+    /* ===== Mobile card styles ===== */
+    .desglose-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        border: 1px solid #e9ecef;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .desglose-card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .desglose-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .desglose-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .desglose-card-cantidad {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .desglose-card-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+    }
+
+    .desglose-card-total {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .desglose-card-pct {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #495057;
+        background: #e9ecef;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+
+    /* ===== Progress bar ===== */
+    .desglose-bar-track {
+        height: 6px;
+        background: #dee2e6;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .desglose-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .bar-success  { background: #198754; }
+    .bar-primary  { background: #0d6efd; }
+    .bar-info     { background: #0dcaf0; }
+    .bar-warning  { background: #ffc107; }
+    .bar-secondary { background: #6c757d; }
+
+    /* ===== Total row ===== */
+    .desglose-card-total-row {
+        background: #e8f5e9;
+        border-color: #c8e6c9;
+    }
+</style>
+
