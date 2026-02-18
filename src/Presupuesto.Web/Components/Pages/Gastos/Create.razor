@@ -46,16 +46,32 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Montos Rápidos</label>
-                            <div class="d-flex flex-wrap gap-2">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-cash-stack me-1"></i>Montos Rápidos
+                            </label>
+                            <div class="billete-grid">
                                 @foreach (var monto in montosPredefinidos)
                                 {
-                                    <div class="card @(gasto.Monto == monto ? "border-primary bg-light" : "")" 
-                                         style="cursor: pointer; min-width: 80px;" 
+                                    var colorClass = GetBilleteColor(monto);
+                                    var isSelected = gasto.Monto == monto;
+                                    <div class="billete @colorClass @(isSelected ? "billete-selected" : "")"
                                          @onclick="() => SeleccionarMonto(monto)">
-                                        <div class="card-body text-center p-2">
-                                            <span class="fw-bold">$@monto.ToString("N0")</span>
+                                        <div class="billete-pattern"></div>
+                                        <div class="billete-corner billete-corner-tl"></div>
+                                        <div class="billete-corner billete-corner-tr"></div>
+                                        <div class="billete-corner billete-corner-bl"></div>
+                                        <div class="billete-corner billete-corner-br"></div>
+                                        <div class="billete-content">
+                                            <span class="billete-currency">$</span>
+                                            <span class="billete-amount">@monto.ToString("N0")</span>
                                         </div>
+                                        <div class="billete-label">COP</div>
+                                        @if (isSelected)
+                                        {
+                                            <div class="billete-check">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                            </div>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -105,6 +121,16 @@
         gasto.Monto = monto;
     }
 
+    private string GetBilleteColor(decimal monto) => monto switch
+    {
+        5000 => "billete-5k",
+        10000 => "billete-10k",
+        20000 => "billete-20k",
+        50000 => "billete-50k",
+        100000 => "billete-100k",
+        _ => "billete-5k"
+    };
+
     private async Task HandleSubmit()
     {
         saving = true;
@@ -124,3 +150,229 @@
         }
     }
 }
+
+<style>
+    /* ============ BILLETE GRID ============ */
+    .billete-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 12px;
+    }
+
+    /* ============ BILLETE BASE ============ */
+    .billete {
+        position: relative;
+        border-radius: 10px;
+        padding: 16px 12px;
+        cursor: pointer;
+        overflow: hidden;
+        border: 2px solid transparent;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .billete:hover {
+        transform: translateY(-4px) scale(1.03);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .billete:active {
+        transform: translateY(-1px) scale(1.01);
+    }
+
+    /* ============ GUILLOCHÉ PATTERN ============ */
+    .billete-pattern {
+        position: absolute;
+        inset: 0;
+        opacity: 0.06;
+        background-image:
+            repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 3px,
+                currentColor 3px,
+                currentColor 4px
+            ),
+            repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 3px,
+                currentColor 3px,
+                currentColor 4px
+            );
+        pointer-events: none;
+    }
+
+    /* ============ DECORATIVE CORNERS ============ */
+    .billete-corner {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-color: currentColor;
+        border-style: solid;
+        opacity: 0.35;
+    }
+
+    .billete-corner-tl {
+        top: 5px;
+        left: 5px;
+        border-width: 2px 0 0 2px;
+        border-radius: 4px 0 0 0;
+    }
+
+    .billete-corner-tr {
+        top: 5px;
+        right: 5px;
+        border-width: 2px 2px 0 0;
+        border-radius: 0 4px 0 0;
+    }
+
+    .billete-corner-bl {
+        bottom: 5px;
+        left: 5px;
+        border-width: 0 0 2px 2px;
+        border-radius: 0 0 0 4px;
+    }
+
+    .billete-corner-br {
+        bottom: 5px;
+        right: 5px;
+        border-width: 0 2px 2px 0;
+        border-radius: 0 0 4px 0;
+    }
+
+    /* ============ CONTENT ============ */
+    .billete-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+    }
+
+    .billete-currency {
+        font-size: 0.85rem;
+        font-weight: 700;
+        opacity: 0.8;
+    }
+
+    .billete-amount {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .billete-label {
+        position: relative;
+        z-index: 1;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0.5;
+        margin-top: 2px;
+    }
+
+    /* ============ CHECK ICON ============ */
+    .billete-check {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 2;
+        font-size: 1.1rem;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @@keyframes checkPop {
+        0% { transform: scale(0); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ============ SELECTED STATE ============ */
+    .billete-selected {
+        transform: translateY(-3px) scale(1.04);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .billete-selected .billete-corner {
+        opacity: 0.6;
+    }
+
+    /* ============ COLOR THEMES ============ */
+
+    /* $5.000 - Verde suave */
+    .billete-5k {
+        background: linear-gradient(135deg, #2d8a4e, #34a853, #43b563);
+        color: #e8f5e9;
+    }
+    .billete-5k.billete-selected {
+        border-color: #1b5e20;
+        box-shadow: 0 6px 20px rgba(45, 138, 78, 0.45),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    /* $10.000 - Rojo terracota */
+    .billete-10k {
+        background: linear-gradient(135deg, #c0392b, #d44637, #e74c3c);
+        color: #fce4ec;
+    }
+    .billete-10k.billete-selected {
+        border-color: #7f1d1d;
+        box-shadow: 0 6px 20px rgba(192, 57, 43, 0.45),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    /* $20.000 - Naranja dorado */
+    .billete-20k {
+        background: linear-gradient(135deg, #d4820a, #e8960f, #f0a416);
+        color: #fff8e1;
+    }
+    .billete-20k.billete-selected {
+        border-color: #7c4a03;
+        box-shadow: 0 6px 20px rgba(212, 130, 10, 0.45),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    /* $50.000 - Azul profundo */
+    .billete-50k {
+        background: linear-gradient(135deg, #1a3a6b, #1e5299, #2471cc);
+        color: #e3f2fd;
+    }
+    .billete-50k.billete-selected {
+        border-color: #0d1f3c;
+        box-shadow: 0 6px 20px rgba(26, 58, 107, 0.45),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    /* $100.000 - Púrpura premium */
+    .billete-100k {
+        background: linear-gradient(135deg, #4a1a6b, #6a2c91, #8234b0);
+        color: #f3e5f5;
+    }
+    .billete-100k.billete-selected {
+        border-color: #2d0f41;
+        box-shadow: 0 6px 20px rgba(74, 26, 107, 0.5),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @@media (max-width: 480px) {
+        .billete-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .billete-amount {
+            font-size: 1.05rem;
+        }
+    }
+</style>
+
