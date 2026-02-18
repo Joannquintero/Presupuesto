@@ -9,3 +9,4 @@ C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Doma
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\refint\Presupuesto.Domain.dll
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.pdb
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\ref\Presupuesto.Domain.dll
+C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.sourcelink.json

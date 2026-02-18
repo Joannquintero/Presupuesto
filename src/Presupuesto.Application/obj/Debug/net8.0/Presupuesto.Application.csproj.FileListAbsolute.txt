@@ -13,3 +13,4 @@ C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto
 C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\refint\Presupuesto.Application.dll
 C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.pdb
 C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\ref\Presupuesto.Application.dll
+C:\Projects\Presupuesto\src\Presupuesto.Application\obj\Debug\net8.0\Presupuesto.Application.sourcelink.json

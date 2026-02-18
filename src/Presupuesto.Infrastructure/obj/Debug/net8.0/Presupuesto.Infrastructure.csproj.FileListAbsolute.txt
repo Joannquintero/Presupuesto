@@ -17,3 +17,4 @@ C:\Projects\Presupuesto\src\Presupuesto.Infrastructure\obj\Debug\net8.0\refint\P
 C:\Projects\Presupuesto\src\Presupuesto.Infrastructure\obj\Debug\net8.0\Presupuesto.Infrastructure.pdb
 C:\Projects\Presupuesto\src\Presupuesto.Infrastructure\obj\Debug\net8.0\Presupuesto.Infrastructure.genruntimeconfig.cache
 C:\Projects\Presupuesto\src\Presupuesto.Infrastructure\obj\Debug\net8.0\ref\Presupuesto.Infrastructure.dll
+C:\Projects\Presupuesto\src\Presupuesto.Infrastructure\obj\Debug\net8.0\Presupuesto.Infrastructure.sourcelink.json

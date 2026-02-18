@@ -45,6 +45,22 @@
                             <ValidationMessage For="() => gasto.Descripcion" class="text-danger" />
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label">Montos Rápidos</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var monto in montosPredefinidos)
+                                {
+                                    <div class="card @(gasto.Monto == monto ? "border-primary bg-light" : "")" 
+                                         style="cursor: pointer; min-width: 80px;" 
+                                         @onclick="() => SeleccionarMonto(monto)">
+                                        <div class="card-body text-center p-2">
+                                            <span class="fw-bold">$@monto.ToString("N0")</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
                         <div class="mb-4">
                             <label class="form-label">Monto</label>
                             <div class="input-group">
@@ -82,6 +98,12 @@
     private CreateUpdateGastoDto gasto = new();
     private bool saving = false;
     private string? errorMessage;
+    private decimal[] montosPredefinidos = { 5000, 10000, 20000, 50000, 100000 };
+
+    private void SeleccionarMonto(decimal monto)
+    {
+        gasto.Monto = monto;
+    }
 
     private async Task HandleSubmit()
     {

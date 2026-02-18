@@ -67,3 +67,5 @@ C:\Projects\Presupuesto\src\Presupuesto.Web\obj\Debug\net8.0\refint\Presupuesto.
 C:\Projects\Presupuesto\src\Presupuesto.Web\obj\Debug\net8.0\Presupuesto.Web.pdb
 C:\Projects\Presupuesto\src\Presupuesto.Web\obj\Debug\net8.0\Presupuesto.Web.genruntimeconfig.cache
 C:\Projects\Presupuesto\src\Presupuesto.Web\obj\Debug\net8.0\ref\Presupuesto.Web.dll
+C:\Projects\Presupuesto\src\Presupuesto.Web\obj\Debug\net8.0\Presupuesto.Web.sourcelink.json
+C:\Projects\Presupuesto\src\Presupuesto.Web\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
