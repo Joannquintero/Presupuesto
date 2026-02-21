@@ -36,4 +36,7 @@ public class PresupuestoMensual
     /// No se muestra en la UI.
     /// </summary>
     public DateTime FechaFin { get; set; }
+
+    // Navegación
+    public ICollection<SaldoPresupuesto> Saldos { get; set; } = new List<SaldoPresupuesto>();
 }

@@ -2,6 +2,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Presupuesto.Application.DTOs;
 using Presupuesto.Domain.Entities;
+using Presupuesto.Domain.Enums;
 
 namespace Presupuesto.Application.Services;
 
@@ -21,16 +22,18 @@ public class PresupuestoMensualService : IPresupuestoMensualService
 
     public async Task<List<PresupuestoMensualDto>> GetAllAsync()
     {
-        return await _presupuestos
+        var list = await _presupuestos
+            .Include(p => p.Saldos)
             .OrderByDescending(p => p.Anio)
             .ThenByDescending(p => p.Mes)
-            .Select(p => MapToDto(p))
             .ToListAsync();
+
+        return list.Select(MapToDto).ToList();
     }
 
     public async Task<List<PresupuestoMensualDto>> GetByFilterAsync(int? anio, int? mes, string? busqueda)
     {
-        var query = _presupuestos.AsQueryable();
+        var query = _presupuestos.Include(p => p.Saldos).AsQueryable();
 
         if (anio.HasValue)
             query = query.Where(p => p.Anio == anio.Value);
@@ -41,16 +44,19 @@ public class PresupuestoMensualService : IPresupuestoMensualService
         if (!string.IsNullOrWhiteSpace(busqueda))
             query = query.Where(p => p.Concepto != null && p.Concepto.Contains(busqueda));
 
-        return await query
+        var list = await query
             .OrderByDescending(p => p.Anio)
             .ThenByDescending(p => p.Mes)
-            .Select(p => MapToDto(p))
             .ToListAsync();
+
+        return list.Select(MapToDto).ToList();
     }
 
     public async Task<PresupuestoMensualDto?> GetByIdAsync(int id)
     {
-        var presupuesto = await _presupuestos.FindAsync(id);
+        var presupuesto = await _presupuestos
+            .Include(p => p.Saldos)
+            .FirstOrDefaultAsync(p => p.Id == id);
         return presupuesto is null ? null : MapToDto(presupuesto);
     }
 
@@ -98,12 +104,19 @@ public class PresupuestoMensualService : IPresupuestoMensualService
         return true;
     }
 
-    private static PresupuestoMensualDto MapToDto(PresupuestoMensual p) => new()
+    private static PresupuestoMensualDto MapToDto(PresupuestoMensual p)
     {
-        Id = p.Id,
-        Anio = p.Anio,
-        Mes = p.Mes,
-        Monto = p.Monto,
-        Concepto = p.Concepto
-    };
+        var agregar = p.Saldos.Where(s => s.Tipo == TipoMovimiento.Agregar).Sum(s => s.Monto);
+        var quitar  = p.Saldos.Where(s => s.Tipo == TipoMovimiento.Quitar).Sum(s => s.Monto);
+
+        return new()
+        {
+            Id          = p.Id,
+            Anio        = p.Anio,
+            Mes         = p.Mes,
+            Monto       = p.Monto,
+            Concepto    = p.Concepto,
+            SaldoActual = p.Monto + agregar - quitar
+        };
+    }
 }

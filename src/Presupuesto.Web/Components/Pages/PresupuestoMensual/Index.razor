@@ -1,7 +1,9 @@
 @page "/presupuesto-mensual"
 @using Presupuesto.Application.DTOs
 @using Presupuesto.Application.Services
+@using Presupuesto.Domain.Enums
 @inject IPresupuestoMensualService PresupuestoService
+@inject ISaldoPresupuestoService SaldoService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -90,7 +92,8 @@
                                 <tr>
                                     <th>Año</th>
                                     <th>Mes</th>
-                                    <th class="text-end">Monto</th>
+                                    <th class="text-end">Presupuesto</th>
+                                    <th class="text-end">Saldo Actual</th>
                                     <th>Concepto</th>
                                     <th class="text-center">Acciones</th>
                                 </tr>
@@ -99,10 +102,16 @@
                                 @foreach (var p in presupuestos)
                                 {
                                     var presupuestoId = p.Id;
+                                    var saldoColor = p.SaldoActual >= p.Monto
+                                        ? "text-success"
+                                        : p.SaldoActual > 0 ? "text-warning" : "text-danger";
                                     <tr>
                                         <td>@p.Anio</td>
                                         <td>@p.MesNombre</td>
-                                        <td class="text-end fw-semibold">$ @p.Monto.ToString("N2")</td>
+                                        <td class="text-end fw-semibold">$ @p.Monto.ToString("N0")</td>
+                                        <td class="text-end fw-semibold @saldoColor">
+                                            $ @p.SaldoActual.ToString("N0")
+                                        </td>
                                         <td>
                                             @if (!string.IsNullOrEmpty(p.Concepto))
                                             {
@@ -114,6 +123,11 @@
                                             }
                                         </td>
                                         <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-success me-1"
+                                                    title="Ajustar saldo"
+                                                    @onclick="() => AbrirModalSaldo(presupuestoId)">
+                                                <i class="bi bi-plus-minus"></i>
+                                            </button>
                                             <button class="btn btn-sm btn-outline-primary me-1"
                                                     @onclick="() => EditarPresupuesto(presupuestoId)">
                                                 <i class="bi bi-pencil"></i>
@@ -137,7 +151,131 @@
     }
 </div>
 
-<!-- Modal de confirmación -->
+<!-- Modal: Ajustar Saldo -->
+@if (showSaldoModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-minus me-2 text-success"></i>Ajustar Saldo
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModalSaldo"></button>
+                </div>
+                <div class="modal-body">
+
+                    <!-- Historial de movimientos -->
+                    @if (historialSaldos.Count > 0)
+                    {
+                        <h6 class="mb-2 fw-semibold">Movimientos anteriores</h6>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Tipo</th>
+                                        <th class="text-end">Monto</th>
+                                        <th>Concepto</th>
+                                        <th class="text-center">Quitar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var s in historialSaldos)
+                                    {
+                                        var saldoId = s.Id;
+                                        <tr>
+                                            <td class="text-nowrap">@s.Fecha.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                <span class="badge @(s.Tipo == TipoMovimiento.Agregar ? "bg-success" : "bg-danger")">
+                                                    @s.TipoTexto
+                                                </span>
+                                            </td>
+                                            <td class="text-end fw-semibold">$ @s.Monto.ToString("N0")</td>
+                                            <td>@(s.Concepto ?? "-")</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        @onclick="() => EliminarSaldo(saldoId)">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <!-- Formulario nuevo movimiento -->
+                    <h6 class="fw-semibold mb-3">Nuevo movimiento</h6>
+                    <EditForm Model="dtoSaldo" OnValidSubmit="GuardarSaldo" FormName="form-saldo">
+                        <DataAnnotationsValidator />
+
+                        <div class="row g-3">
+                            <!-- Tipo -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
+                                <InputSelect class="form-select" @bind-Value="dtoSaldo.Tipo">
+                                    <option value="@TipoMovimiento.Agregar">Agregar</option>
+                                    <option value="@TipoMovimiento.Quitar">Quitar</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => dtoSaldo.Tipo" class="text-danger small" />
+                            </div>
+
+                            <!-- Monto -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Monto <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" class="form-control" inputmode="numeric"
+                                           value="@montoSaldoTexto"
+                                           @oninput="OnMontoSaldoInput"
+                                           placeholder="0" />
+                                </div>
+                                <ValidationMessage For="() => dtoSaldo.Monto" class="text-danger small" />
+                            </div>
+
+                            <!-- Concepto -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Concepto <span class="text-muted small">(opcional)</span></label>
+                                <InputText class="form-control" @bind-Value="dtoSaldo.Concepto"
+                                           maxlength="200"
+                                           placeholder="Descripción del ajuste..." />
+                                <ValidationMessage For="() => dtoSaldo.Concepto" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorSaldo))
+                        {
+                            <div class="alert alert-danger mt-3 mb-0">
+                                <i class="bi bi-exclamation-triangle me-1"></i>@errorSaldo
+                            </div>
+                        }
+
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="submit" class="btn btn-success" disabled="@savingSaldo">
+                                @if (savingSaldo)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-lg me-1"></i>
+                                }
+                                Guardar movimiento
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" @onclick="CerrarModalSaldo">
+                                Cerrar
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de confirmación de eliminación de presupuesto -->
 @if (showDeleteModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
@@ -160,14 +298,25 @@
 }
 
 @code {
+    // ── Listado ──────────────────────────────────────────────────────────────
     private List<PresupuestoMensualDto> presupuestos = new();
     private bool loading = true;
-    private bool showDeleteModal = false;
-    private int idToDelete;
-
     private string? filtroAnio;
     private string? filtroMes;
     private string? busqueda;
+
+    // ── Eliminación ──────────────────────────────────────────────────────────
+    private bool showDeleteModal = false;
+    private int idToDelete;
+
+    // ── Modal Saldo ──────────────────────────────────────────────────────────
+    private bool showSaldoModal = false;
+    private int presupuestoIdSaldo;
+    private CreateSaldoPresupuestoDto dtoSaldo = new();
+    private List<SaldoPresupuestoDto> historialSaldos = new();
+    private string montoSaldoTexto = string.Empty;
+    private bool savingSaldo = false;
+    private string? errorSaldo;
 
     private static readonly Dictionary<int, string> Meses = new()
     {
@@ -189,7 +338,7 @@
         try
         {
             int? anio = string.IsNullOrEmpty(filtroAnio) ? null : int.Parse(filtroAnio);
-            int? mes = string.IsNullOrEmpty(filtroMes) ? null : int.Parse(filtroMes);
+            int? mes  = string.IsNullOrEmpty(filtroMes)  ? null : int.Parse(filtroMes);
             presupuestos = await PresupuestoService.GetByFilterAsync(anio, mes, busqueda);
         }
         catch (Exception ex)
@@ -205,8 +354,8 @@
     private async Task LimpiarFiltros()
     {
         filtroAnio = null;
-        filtroMes = null;
-        busqueda = null;
+        filtroMes  = null;
+        busqueda   = null;
         await Filtrar();
     }
 
@@ -216,15 +365,80 @@
         showDeleteModal = true;
     }
 
-    private void EditarPresupuesto(int id)
-    {
+    private void EditarPresupuesto(int id) =>
         Navigation.NavigateTo($"/presupuesto-mensual/editar/{id}");
-    }
 
     private async Task ConfirmarEliminar()
     {
         await PresupuestoService.DeleteAsync(idToDelete);
         showDeleteModal = false;
+        await Filtrar();
+    }
+
+    // ── Modal Ajustar Saldo ──────────────────────────────────────────────────
+
+    private async Task AbrirModalSaldo(int id)
+    {
+        presupuestoIdSaldo  = id;
+        dtoSaldo            = new CreateSaldoPresupuestoDto();
+        montoSaldoTexto     = string.Empty;
+        errorSaldo          = null;
+        historialSaldos     = await SaldoService.GetByPresupuestoIdAsync(id);
+        showSaldoModal      = true;
+    }
+
+    private void CerrarModalSaldo()
+    {
+        showSaldoModal = false;
+        errorSaldo     = null;
+    }
+
+    private void OnMontoSaldoInput(ChangeEventArgs e)
+    {
+        var raw  = e.Value?.ToString() ?? string.Empty;
+        var solo = new string(raw.Where(char.IsDigit).ToArray());
+
+        if (string.IsNullOrEmpty(solo))
+        {
+            dtoSaldo.Monto  = 0;
+            montoSaldoTexto = string.Empty;
+            return;
+        }
+
+        if (long.TryParse(solo, out var valor))
+        {
+            dtoSaldo.Monto  = valor;
+            montoSaldoTexto = valor.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
+        }
+    }
+
+    private async Task GuardarSaldo()
+    {
+        savingSaldo = true;
+        errorSaldo  = null;
+        try
+        {
+            await SaldoService.CreateAsync(presupuestoIdSaldo, dtoSaldo);
+            // Recargar historial y lista principal
+            historialSaldos = await SaldoService.GetByPresupuestoIdAsync(presupuestoIdSaldo);
+            dtoSaldo        = new CreateSaldoPresupuestoDto();
+            montoSaldoTexto = string.Empty;
+            await Filtrar();
+        }
+        catch (Exception ex)
+        {
+            errorSaldo = $"Error al guardar: {ex.Message}";
+        }
+        finally
+        {
+            savingSaldo = false;
+        }
+    }
+
+    private async Task EliminarSaldo(int id)
+    {
+        await SaldoService.DeleteAsync(id);
+        historialSaldos = await SaldoService.GetByPresupuestoIdAsync(presupuestoIdSaldo);
         await Filtrar();
     }
 }

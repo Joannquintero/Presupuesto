@@ -13,4 +13,6 @@ public class PresupuestoMensualDto
     public string MesNombre => new DateTime(Anio, Mes, 1).ToString("MMMM", new CultureInfo("es-ES"));
     public decimal Monto { get; set; }
     public string? Concepto { get; set; }
+    /// <summary>Saldo efectivo: Monto + Agregar - Quitar.</summary>
+    public decimal SaldoActual { get; set; }
 }
