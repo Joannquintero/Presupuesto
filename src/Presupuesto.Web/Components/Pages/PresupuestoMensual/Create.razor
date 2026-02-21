@@ -116,8 +116,8 @@
                                         </td>
                                         <td>
                                             <div class="input-group">
-                                                <span class="input-group-text">$</span>
-                                                <input type="text" class="form-control bg-white" value="@dist.Monto.ToString("N0", new System.Globalization.CultureInfo("es-CL"))" readonly />
+                                                <span class="input-group-text bg-light">$</span>
+                                                <span class="form-control bg-light text-end">@dist.Monto.ToString("N0", new System.Globalization.CultureInfo("es-CL"))</span>
                                             </div>
                                         </td>
                                         <td class="text-end">
@@ -135,7 +135,7 @@
                                 <tr class="fw-bold @(TotalPorcentaje == 100 ? "table-success" : "table-warning")">
                                     <td>TOTAL</td>
                                     <td>@TotalPorcentaje %</td>
-                                    <td>$ @dto.Distribuciones.Sum(d => d.Monto).ToString("N0", new System.Globalization.CultureInfo("es-CL"))</td>
+                                    <td class="text-end">$ @dto.Distribuciones.Sum(d => d.Monto).ToString("N0", new System.Globalization.CultureInfo("es-CL"))</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
