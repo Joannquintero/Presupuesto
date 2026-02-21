@@ -13,4 +13,5 @@ public interface IPresupuestoMensualService
     Task<PresupuestoMensualDto> CreateAsync(CreateUpdatePresupuestoMensualDto dto);
     Task<PresupuestoMensualDto?> UpdateAsync(int id, CreateUpdatePresupuestoMensualDto dto);
     Task<bool> DeleteAsync(int id);
+    Task<bool> ExistsAsync(int anio, int mes, int? excludeId = null);
 }

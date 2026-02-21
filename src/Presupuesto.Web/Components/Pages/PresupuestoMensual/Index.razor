@@ -200,7 +200,7 @@
                                             <td>@(s.Concepto ?? "-")</td>
                                             <td class="text-center">
                                                 <button class="btn btn-sm btn-outline-danger"
-                                                        @onclick="() => EliminarSaldo(saldoId)">
+                                                        @onclick="() => IniciarEliminarSaldo(saldoId)">
                                                     <i class="bi bi-x"></i>
                                                 </button>
                                             </td>
@@ -307,7 +307,7 @@
 <!-- Modal de confirmación para Ajuste de Saldo -->
 @if (showConfirmSaldoModal)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1060;">
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1070;">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-warning text-dark">
@@ -327,6 +327,36 @@
                     <button type="button" class="btn btn-outline-secondary" @onclick="() => showConfirmSaldoModal = false">Cancelar</button>
                     <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarGuardarSaldo">
                         Confirmar y Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de confirmación para ELIMINAR Ajuste de Saldo -->
+@if (showConfirmDeleteSaldoModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1070;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-trash3-fill me-2"></i>Eliminar Movimiento
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="() => showConfirmDeleteSaldoModal = false"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="fs-5 mb-2">¿Desea eliminar este movimiento del historial?</p>
+                    <div class="alert alert-warning border-0 py-2 small mb-0">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        Al eliminarlo, se revertirá el impacto en el total y se recalculerán nuevamente los porcentajes de distribución.
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="() => showConfirmDeleteSaldoModal = false">Cancelar</button>
+                    <button type="button" class="btn btn-danger px-4" @onclick="ConfirmarEliminarSaldo">
+                        Eliminar definitivamete
                     </button>
                 </div>
             </div>
@@ -354,6 +384,8 @@
     private string montoSaldoTexto = string.Empty;
     private bool savingSaldo = false;
     private bool showConfirmSaldoModal = false;
+    private bool showConfirmDeleteSaldoModal = false;
+    private int idSaldoToDelete;
     private string? errorSaldo;
 
     private static readonly Dictionary<int, string> Meses = new()
@@ -485,10 +517,24 @@
         }
     }
 
-    private async Task EliminarSaldo(int id)
+    private void IniciarEliminarSaldo(int id)
     {
-        await SaldoService.DeleteAsync(id);
-        historialSaldos = await SaldoService.GetByPresupuestoIdAsync(presupuestoIdSaldo);
-        await Filtrar();
+        idSaldoToDelete = id;
+        showConfirmDeleteSaldoModal = true;
+    }
+
+    private async Task ConfirmarEliminarSaldo()
+    {
+        showConfirmDeleteSaldoModal = false;
+        try
+        {
+            await SaldoService.DeleteAsync(idSaldoToDelete);
+            historialSaldos = await SaldoService.GetByPresupuestoIdAsync(presupuestoIdSaldo);
+            await Filtrar();
+        }
+        catch (Exception ex)
+        {
+            errorSaldo = $"Error al eliminar: {ex.Message}";
+        }
     }
 }

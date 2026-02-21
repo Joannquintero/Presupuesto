@@ -85,3 +85,6 @@ Al ajustar el saldo del presupuesto mensual, se debe actualizar el monto de la d
 
 --
 Al ajustar el porcentaje de una distribucion, se debe actualizar el monto de la distribucion correspondiente. Por ejemplo, si se aumenta el porcentaje en 10, se debe aumentar el monto de la distribucion correspondiente en 10. Si se disminuye el porcentaje en 10, se debe disminuir el monto de la distribucion correspondiente en 10.  
+
+--
+No se debe permitir guardar el presupuesto mensual si ya hay un presupuesto mensual para el mismo año y mes.  

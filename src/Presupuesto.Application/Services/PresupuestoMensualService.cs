@@ -70,6 +70,11 @@ public class PresupuestoMensualService : IPresupuestoMensualService
 
     public async Task<PresupuestoMensualDto> CreateAsync(CreateUpdatePresupuestoMensualDto dto)
     {
+        if (await ExistsAsync(dto.Anio, dto.Mes))
+        {
+            throw new InvalidOperationException($"Ya existe un presupuesto para {Meses[dto.Mes]} del {dto.Anio}.");
+        }
+
         var presupuesto = new PresupuestoMensual
         {
             Anio = dto.Anio,
@@ -94,6 +99,11 @@ public class PresupuestoMensualService : IPresupuestoMensualService
 
     public async Task<PresupuestoMensualDto?> UpdateAsync(int id, CreateUpdatePresupuestoMensualDto dto)
     {
+        if (await ExistsAsync(dto.Anio, dto.Mes, id))
+        {
+            throw new InvalidOperationException($"Ya existe otro presupuesto para {Meses[dto.Mes]} del {dto.Anio}.");
+        }
+
         var presupuesto = await _presupuestos
             .Include(p => p.Distribuciones)
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -132,6 +142,18 @@ public class PresupuestoMensualService : IPresupuestoMensualService
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<bool> ExistsAsync(int anio, int mes, int? excludeId = null)
+    {
+        return await _presupuestos.AnyAsync(p => p.Anio == anio && p.Mes == mes && (!excludeId.HasValue || p.Id != excludeId.Value));
+    }
+
+    private static readonly Dictionary<int, string> Meses = new()
+    {
+        { 1, "Enero" }, { 2, "Febrero" }, { 3, "Marzo" }, { 4, "Abril" },
+        { 5, "Mayo" }, { 6, "Junio" }, { 7, "Julio" }, { 8, "Agosto" },
+        { 9, "Septiembre" }, { 10, "Octubre" }, { 11, "Noviembre" }, { 12, "Diciembre" }
+    };
 
     private static PresupuestoMensualDto MapToDto(PresupuestoMensual p)
     {

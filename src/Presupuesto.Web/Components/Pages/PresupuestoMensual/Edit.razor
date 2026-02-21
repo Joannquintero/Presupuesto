@@ -154,7 +154,7 @@
                                 <tfoot>
                                     <tr class="fw-bold @(TotalPorcentaje == 100 ? "table-success" : "table-warning")">
                                         <td>TOTAL</td>
-                                        <td>@TotalPorcentaje %</td>
+                                        <td>@TotalPorcentaje.ToString("N0") %</td>
                                         <td class="text-end">$ @dto.Distribuciones.Sum(d => d.Monto).ToString("N0", new System.Globalization.CultureInfo("es-CL"))</td>
                                         <td></td>
                                     </tr>
@@ -171,7 +171,7 @@
                             <ul class="mb-0">
                                 @if (TotalPorcentaje != 100)
                                 {
-                                    <li>La suma de los porcentajes debe ser exactamente 100% (Actual: @TotalPorcentaje%).</li>
+                                    <li>La suma de los porcentajes debe ser exactamente 100% (Actual: @TotalPorcentaje.ToString("N0")%).</li>
                                 }
                                 @if (HayCategoriasDuplicadas)
                                 {
