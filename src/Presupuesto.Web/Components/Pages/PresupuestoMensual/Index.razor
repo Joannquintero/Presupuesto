@@ -285,19 +285,49 @@
 <!-- Modal de confirmación de eliminación de presupuesto -->
 @if (showDeleteModal)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1060;">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" @onclick="() => showDeleteModal = false"></button>
+                    <button type="button" class="btn-close btn-close-white" @onclick="() => showDeleteModal = false"></button>
                 </div>
-                <div class="modal-body">
-                    <p>¿Está seguro de eliminar este presupuesto? Esta acción no se puede deshacer.</p>
+                <div class="modal-body p-4">
+                    <p class="mb-0">¿Está seguro de eliminar este presupuesto? Esta acción no se puede deshacer.</p>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" @onclick="() => showDeleteModal = false">Cancelar</button>
-                    <button type="button" class="btn btn-danger" @onclick="ConfirmarEliminar">Eliminar</button>
+                    <button type="button" class="btn btn-danger px-4" @onclick="ConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de confirmación para Ajuste de Saldo -->
+@if (showConfirmSaldoModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Atención
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => showConfirmSaldoModal = false"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="fs-5 mb-2">¿Confirmar ajuste de saldo?</p>
+                    <div class="alert alert-info border-0 py-2 small mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Este cambio afectará los valores de la <strong>distribución mensual</strong> y recalculará los porcentajes automáticamente.
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="() => showConfirmSaldoModal = false">Cancelar</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarGuardarSaldo">
+                        Confirmar y Guardar
+                    </button>
                 </div>
             </div>
         </div>
@@ -323,6 +353,7 @@
     private List<SaldoPresupuestoDto> historialSaldos = new();
     private string montoSaldoTexto = string.Empty;
     private bool savingSaldo = false;
+    private bool showConfirmSaldoModal = false;
     private string? errorSaldo;
 
     private static readonly Dictionary<int, string> Meses = new()
@@ -390,6 +421,7 @@
         dtoSaldo            = new CreateSaldoPresupuestoDto();
         montoSaldoTexto     = string.Empty;
         errorSaldo          = null;
+        showConfirmSaldoModal = false;
         historialSaldos     = await SaldoService.GetByPresupuestoIdAsync(id);
         showSaldoModal      = true;
     }
@@ -397,6 +429,7 @@
     private void CerrarModalSaldo()
     {
         showSaldoModal = false;
+        showConfirmSaldoModal = false;
         errorSaldo     = null;
     }
 
@@ -419,8 +452,18 @@
         }
     }
 
-    private async Task GuardarSaldo()
+    private void GuardarSaldo()
     {
+        // En lugar de guardar directamente, mostramos el modal de confirmación
+        if (dtoSaldo.Monto > 0)
+        {
+            showConfirmSaldoModal = true;
+        }
+    }
+
+    private async Task ConfirmarGuardarSaldo()
+    {
+        showConfirmSaldoModal = false;
         savingSaldo = true;
         errorSaldo  = null;
         try
