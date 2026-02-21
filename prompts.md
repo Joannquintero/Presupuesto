@@ -70,5 +70,12 @@ Implementar la funcionalidad para distribuir el presupuesto mensual entre difere
 
 12. Mostrar la sesion para la distribucion del presupuesto al cargar el formulario. Para crear o editar, se debe mostrar una distribuccion por defecto para la categoria "Obligaciones" la cual no se puede cambiar en el combobox y solo se puede editar su valor. Por defecto debe asignarse 100 al porcentaje. A partir de ahi se puede crear distribucciones dinamicamente.
 
+--
+en el formulario de presupuesto mensual, se debe realizar lo siguiente:
 
+1. El campo "Porcentaje (%)" solo debe permitir numeros enteros entre 0 y 100. Ademas, no debe permitir decimales. No debe permitir valores negativos, ni puntos ni comas ni caracteres especiales. 
+2. El campo "Monto" no debe permitir valores negativos, ni puntos ni comas ni caracteres especiales. 
+3. No se debe permitir crear o editar distribuciones con la misma categoria. 
+4. No se debe permitir crear o editar distribuciones con porcentaje 0 o monto 0.
 
+Al escribir en el campo "Porcentaje (%)" no se debe permitir escribir caracteres especiales, ni puntos ni comas ni espacios. Solo se deben permitir numeros enteros entre 0 y 100.  

@@ -113,10 +113,10 @@
                                                 }
                                                 else
                                                 {
-                                                    <select class="form-select" @bind="dist.CategoriaPresupuestoId">
+                                                    <select class="form-select @(HayCategoriasDuplicadas ? "is-invalid" : "")" @onchange="(e) => CambiarCategoria(dist, e)">
                                                         @foreach (var cat in categorias.Where(c => c.Nombre != "Obligaciones"))
                                                         {
-                                                            <option value="@cat.Id">@cat.Nombre</option>
+                                                            <option value="@cat.Id" selected="@(cat.Id == dist.CategoriaPresupuestoId)">@cat.Nombre</option>
                                                         }
                                                     </select>
                                                 }
@@ -161,13 +161,26 @@
                             <i class="bi bi-plus-lg me-1"></i>Agregar Categoría
                         </button>
                         
-                        @if (TotalPorcentaje != 100)
-                        {
-                            <div class="text-danger small mt-2">
-                                <i class="bi bi-exclamation-circle me-1"></i>La suma de los porcentajes debe ser exactamente 100%. Actual: @TotalPorcentaje%
-                            </div>
-                        }
-                    </div>
+                        @if (TotalPorcentaje != 100 || HayCategoriasDuplicadas || HayDistribucionesVacias)
+                    {
+                        <div class="alert alert-warning small mt-2 py-2">
+                            <ul class="mb-0">
+                                @if (TotalPorcentaje != 100)
+                                {
+                                    <li>La suma de los porcentajes debe ser exactamente 100% (Actual: @TotalPorcentaje%).</li>
+                                }
+                                @if (HayCategoriasDuplicadas)
+                                {
+                                    <li>No se permiten categorías duplicadas en la distribución.</li>
+                                }
+                                @if (HayDistribucionesVacias)
+                                {
+                                    <li>Toda distribución debe tener un porcentaje mayor a 0%.</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
 
                     @if (!string.IsNullOrEmpty(errorMessage))
                     {
@@ -177,7 +190,7 @@
                     }
 
                     <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-warning" disabled="@(saving || TotalPorcentaje != 100)">
+                        <button type="submit" class="btn btn-warning" disabled="@(saving || !PuedeGuardar)">
                             @if (saving)
                             {
                                 <span class="spinner-border spinner-border-sm me-1"></span>
@@ -216,6 +229,11 @@
 
     private string montoTexto = string.Empty;
     private decimal TotalPorcentaje => dto.Distribuciones.Sum(d => d.Porcentaje);
+    private bool HayCategoriasDuplicadas => dto.Distribuciones
+        .GroupBy(d => d.CategoriaPresupuestoId)
+        .Any(g => g.Count() > 1);
+    private bool HayDistribucionesVacias => dto.Distribuciones.Any(d => d.Porcentaje <= 0);
+    private bool PuedeGuardar => TotalPorcentaje == 100 && !HayCategoriasDuplicadas && !HayDistribucionesVacias && dto.Monto > 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -268,16 +286,33 @@
 
     private void AgregarDistribucion()
     {
-        var primeraNoObligacion = categorias.FirstOrDefault(c => c.Nombre != "Obligaciones");
-        if (primeraNoObligacion != null)
+        var categoriasUtilizadas = dto.Distribuciones.Select(d => d.CategoriaPresupuestoId).ToList();
+        var siguienteCategoria = categorias
+            .Where(c => c.Nombre != "Obligaciones" && !categoriasUtilizadas.Contains(c.Id))
+            .FirstOrDefault() ?? categorias.FirstOrDefault(c => c.Nombre != "Obligaciones");
+
+        if (siguienteCategoria != null)
         {
             dto.Distribuciones.Add(new DistribucionPresupuestoDto
             {
-                CategoriaPresupuestoId = primeraNoObligacion.Id,
-                CategoriaNombre = primeraNoObligacion.Nombre,
+                CategoriaPresupuestoId = siguienteCategoria.Id,
+                CategoriaNombre = siguienteCategoria.Nombre,
                 Porcentaje = 0,
                 Monto = 0
             });
+        }
+    }
+
+    private void CambiarCategoria(DistribucionPresupuestoDto dist, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
+        {
+            var cat = categorias.FirstOrDefault(c => c.Id == id);
+            if (cat != null)
+            {
+                dist.CategoriaPresupuestoId = cat.Id;
+                dist.CategoriaNombre = cat.Nombre;
+            }
         }
     }
 
@@ -288,9 +323,19 @@
 
     private void OnPorcentajeInput(DistribucionPresupuestoDto dist, ChangeEventArgs e)
     {
-        if (decimal.TryParse(e.Value?.ToString(), out var val))
+        var raw = e.Value?.ToString() ?? string.Empty;
+        var solo = new string(raw.Where(char.IsDigit).ToArray());
+
+        if (string.IsNullOrEmpty(solo))
         {
-            dist.Porcentaje = Math.Clamp(Math.Round(val, 0), 0, 100);
+            dist.Porcentaje = 0;
+            RecalcularMontos();
+            return;
+        }
+
+        if (int.TryParse(solo, out var val))
+        {
+            dist.Porcentaje = Math.Clamp(val, 0, 100);
             RecalcularMontos();
         }
     }
