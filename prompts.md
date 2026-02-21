@@ -36,7 +36,12 @@ Implementar funcionalidad para agregar o quitar saldos de presupuesto mensual. D
 
 - Monto (1000) - Decimal
 - Concepto (Concepto) - Texto opcional
-- Tipo (Agregar/Quitar) - Combobox  
+- Tipo (Agregar/Quitar) - Combobox 
+
+-- 
+Implementar la funcionalidad para distribuir el presupuesto mensual entre diferentes categorias. Tener en cuenta lo siguiente:
+
+1.    
 
 
 
