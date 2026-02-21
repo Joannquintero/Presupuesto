@@ -123,16 +123,21 @@
                                             }
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-sm btn-outline-success me-1 fw-bold"
+                                            <button class="btn btn-sm btn-outline-success me-1"
+                                                    style="width:32px;height:32px;padding:0;"
                                                     title="Ajustar saldo"
                                                     @onclick="() => AbrirModalSaldo(presupuestoId)">
                                                 ±
                                             </button>
                                             <button class="btn btn-sm btn-outline-primary me-1"
+                                                    style="width:32px;height:32px;padding:0;"
+                                                    title="Editar"
                                                     @onclick="() => EditarPresupuesto(presupuestoId)">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                             <button class="btn btn-sm btn-outline-danger"
+                                                    style="width:32px;height:32px;padding:0;"
+                                                    title="Eliminar"
                                                     @onclick="() => MostrarModalEliminar(presupuestoId)">
                                                 <i class="bi bi-trash"></i>
                                             </button>
