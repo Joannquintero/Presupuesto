@@ -1,0 +1,134 @@
+@page "/presupuesto-mensual/crear"
+@using Presupuesto.Application.DTOs
+@using Presupuesto.Application.Services
+@inject IPresupuestoMensualService PresupuestoService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Nuevo Presupuesto - Control de Presupuesto</PageTitle>
+
+<div class="container py-4" style="max-width: 640px;">
+    <div class="mb-4">
+        <a href="/presupuesto-mensual" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al listado
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="bi bi-plus-circle me-2 text-primary"></i>Nuevo Presupuesto Mensual
+            </h4>
+        </div>
+        <div class="card-body">
+            <EditForm Model="dto" OnValidSubmit="Guardar" FormName="create-presupuesto">
+                <DataAnnotationsValidator />
+
+                <div class="row g-3">
+                    <!-- Año -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Año</label>
+                        <input type="number" class="form-control bg-light" value="@dto.Anio" readonly />
+                        <div class="form-text">El año se establece automáticamente.</div>
+                    </div>
+
+                    <!-- Mes -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Mes <span class="text-danger">*</span></label>
+                        <InputSelect class="form-select" @bind-Value="dto.Mes">
+                            <option value="0">-- Seleccione --</option>
+                            @foreach (var mes in Meses)
+                            {
+                                <option value="@mes.Key">@mes.Value</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => dto.Mes" class="text-danger small" />
+                    </div>
+
+                    <!-- Monto -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Monto <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <InputNumber class="form-control" @bind-Value="dto.Monto"
+                                         step="0.01" min="0.01" placeholder="0.00" />
+                        </div>
+                        <ValidationMessage For="() => dto.Monto" class="text-danger small" />
+                    </div>
+
+                    <!-- Concepto -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Concepto <span class="text-muted small">(opcional)</span></label>
+                        <InputText class="form-control" @bind-Value="dto.Concepto"
+                                   maxlength="200"
+                                   placeholder="Ej: Ahorro para vacaciones, Gastos fijos del hogar..." />
+                        <div class="d-flex justify-content-between">
+                            <ValidationMessage For="() => dto.Concepto" class="text-danger small" />
+                            <span class="text-muted small ms-auto">@((dto.Concepto?.Length ?? 0))/200</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-exclamation-triangle me-1"></i>@errorMessage
+                    </div>
+                }
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary" disabled="@saving">
+                        @if (saving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-check-lg me-1"></i>
+                        }
+                        Guardar
+                    </button>
+                    <a href="/presupuesto-mensual" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateUpdatePresupuestoMensualDto dto = new();
+    private bool saving = false;
+    private string? errorMessage;
+
+    private static readonly Dictionary<int, string> Meses = new()
+    {
+        { 1, "Enero" }, { 2, "Febrero" }, { 3, "Marzo" }, { 4, "Abril" },
+        { 5, "Mayo" }, { 6, "Junio" }, { 7, "Julio" }, { 8, "Agosto" },
+        { 9, "Septiembre" }, { 10, "Octubre" }, { 11, "Noviembre" }, { 12, "Diciembre" }
+    };
+
+    protected override void OnInitialized()
+    {
+        dto.Anio = DateTime.Now.Year;
+        dto.Mes = DateTime.Now.Month;
+    }
+
+    private async Task Guardar()
+    {
+        saving = true;
+        errorMessage = null;
+        try
+        {
+            await PresupuestoService.CreateAsync(dto);
+            Navigation.NavigateTo("/presupuesto-mensual");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al guardar: {ex.Message}";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+}

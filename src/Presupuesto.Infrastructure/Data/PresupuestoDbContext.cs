@@ -14,6 +14,7 @@ public class PresupuestoDbContext : DbContext
     }
 
     public DbSet<Gasto> Gastos => Set<Gasto>();
+    public DbSet<PresupuestoMensual> PresupuestosMensuales => Set<PresupuestoMensual>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +27,14 @@ public class PresupuestoDbContext : DbContext
             entity.Property(e => e.Descripcion).HasMaxLength(200).IsRequired();
             entity.Property(e => e.Monto).HasPrecision(18, 2);
             entity.Property(e => e.Categoria).HasConversion<int>();
+        });
+
+        // Configuración de la entidad PresupuestoMensual
+        modelBuilder.Entity<PresupuestoMensual>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Monto).HasPrecision(18, 2);
+            entity.Property(e => e.Concepto).HasMaxLength(200).IsRequired(false);
         });
 
         // Seed de datos iniciales

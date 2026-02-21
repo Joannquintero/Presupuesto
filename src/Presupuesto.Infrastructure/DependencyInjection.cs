@@ -21,6 +21,7 @@ public static class DependencyInjection
 
         // Registrar servicios
         services.AddScoped<IGastoService, GastoService>();
+        services.AddScoped<IPresupuestoMensualService, PresupuestoMensualService>();
 
         return services;
     }

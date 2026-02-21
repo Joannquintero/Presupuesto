@@ -1,0 +1,230 @@
+@page "/presupuesto-mensual"
+@using Presupuesto.Application.DTOs
+@using Presupuesto.Application.Services
+@inject IPresupuestoMensualService PresupuestoService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Presupuesto Mensual - Control de Presupuesto</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-calendar-check me-2"></i>Presupuesto Mensual
+            </h1>
+        </div>
+        <div class="col-auto">
+            <a href="/presupuesto-mensual/crear" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo Presupuesto
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Año</label>
+                    <select class="form-select" @bind="filtroAnio" @bind:after="Filtrar">
+                        <option value="">Todos</option>
+                        @for (int i = DateTime.Now.Year + 1; i >= DateTime.Now.Year - 5; i--)
+                        {
+                            <option value="@i">@i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Mes</label>
+                    <select class="form-select" @bind="filtroMes" @bind:after="Filtrar">
+                        <option value="">Todos</option>
+                        @foreach (var mes in Meses)
+                        {
+                            <option value="@mes.Key">@mes.Value</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Buscar por concepto</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Ej: Ahorro, Arriendo..."
+                               @bind="busqueda" @bind:after="Filtrar" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-secondary w-100" @onclick="LimpiarFiltros">
+                        <i class="bi bi-x-circle me-1"></i>Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                @if (presupuestos.Count == 0)
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No se encontraron presupuestos.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Año</th>
+                                    <th>Mes</th>
+                                    <th class="text-end">Monto</th>
+                                    <th>Concepto</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in presupuestos)
+                                {
+                                    var presupuestoId = p.Id;
+                                    <tr>
+                                        <td>@p.Anio</td>
+                                        <td>@p.MesNombre</td>
+                                        <td class="text-end fw-semibold">@p.Monto.ToString("N2")</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(p.Concepto))
+                                            {
+                                                <span>@p.Concepto</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted fst-italic">Sin concepto</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary me-1"
+                                                    @onclick="() => EditarPresupuesto(presupuestoId)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    @onclick="() => MostrarModalEliminar(presupuestoId)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-muted small mt-2">
+                        Total: <strong>@presupuestos.Count</strong> registro(s)
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal de confirmación -->
+@if (showDeleteModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" @onclick="() => showDeleteModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro de eliminar este presupuesto? Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => showDeleteModal = false">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<PresupuestoMensualDto> presupuestos = new();
+    private bool loading = true;
+    private bool showDeleteModal = false;
+    private int idToDelete;
+
+    private string? filtroAnio;
+    private string? filtroMes;
+    private string? busqueda;
+
+    private static readonly Dictionary<int, string> Meses = new()
+    {
+        { 1, "Enero" }, { 2, "Febrero" }, { 3, "Marzo" }, { 4, "Abril" },
+        { 5, "Mayo" }, { 6, "Junio" }, { 7, "Julio" }, { 8, "Agosto" },
+        { 9, "Septiembre" }, { 10, "Octubre" }, { 11, "Noviembre" }, { 12, "Diciembre" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        filtroAnio = DateTime.Now.Year.ToString();
+        filtroMes = null;
+        await Filtrar();
+    }
+
+    private async Task Filtrar()
+    {
+        loading = true;
+        try
+        {
+            int? anio = string.IsNullOrEmpty(filtroAnio) ? null : int.Parse(filtroAnio);
+            int? mes = string.IsNullOrEmpty(filtroMes) ? null : int.Parse(filtroMes);
+            presupuestos = await PresupuestoService.GetByFilterAsync(anio, mes, busqueda);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al filtrar presupuestos: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        filtroAnio = null;
+        filtroMes = null;
+        busqueda = null;
+        await Filtrar();
+    }
+
+    private void MostrarModalEliminar(int id)
+    {
+        idToDelete = id;
+        showDeleteModal = true;
+    }
+
+    private void EditarPresupuesto(int id)
+    {
+        Navigation.NavigateTo($"/presupuesto-mensual/editar/{id}");
+    }
+
+    private async Task ConfirmarEliminar()
+    {
+        await PresupuestoService.DeleteAsync(idToDelete);
+        showDeleteModal = false;
+        await Filtrar();
+    }
+}

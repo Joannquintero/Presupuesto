@@ -577,3 +577,5 @@ src/Presupuesto.Web/obj/Debug/net8.0/refint/Presupuesto.Web.dll
 /src/Presupuesto.Web/obj/Debug/net8.0/rpswa.dswa.cache.json
 src/Presupuesto.Web/presupuesto.db-shm
 src/Presupuesto.Web/presupuesto.db-wal
+src/Presupuesto.Application/obj/Debug/net8.0/Presupuesto.Application.csproj.CoreCompileInputs.cache
+src/Presupuesto.Application/obj/Debug/net8.0/Presupuesto.Application.csproj.CoreCompileInputs.cache
