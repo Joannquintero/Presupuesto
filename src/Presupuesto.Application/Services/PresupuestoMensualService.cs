@@ -145,7 +145,7 @@ public class PresupuestoMensualService : IPresupuestoMensualService
             Mes         = p.Mes,
             Monto       = p.Monto,
             Concepto    = p.Concepto,
-            SaldoActual = p.Monto + agregar - quitar,
+            SaldoActual = p.Monto,
             Distribuciones = p.Distribuciones.Select(d => new DistribucionPresupuestoDto
             {
                 Id = d.Id,

@@ -232,7 +232,9 @@
                                 <label class="form-label fw-semibold">Monto <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="text" class="form-control" inputmode="numeric"
+                                    <input type="text" class="form-control" 
+                                           inputmode="numeric"
+                                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                            value="@montoSaldoTexto"
                                            @oninput="OnMontoSaldoInput"
                                            placeholder="0" />
@@ -242,10 +244,10 @@
 
                             <!-- Concepto -->
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">Concepto <span class="text-muted small">(opcional)</span></label>
+                                <label class="form-label fw-semibold">Concepto</label>
                                 <InputText class="form-control" @bind-Value="dtoSaldo.Concepto"
                                            maxlength="200"
-                                           placeholder="Descripción del ajuste..." />
+                                           placeholder="Nota..." />
                                 <ValidationMessage For="() => dtoSaldo.Concepto" class="text-danger small" />
                             </div>
                         </div>

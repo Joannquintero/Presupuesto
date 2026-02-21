@@ -79,3 +79,9 @@ en el formulario de presupuesto mensual, se debe realizar lo siguiente:
 4. No se debe permitir crear o editar distribuciones con porcentaje 0 o monto 0.
 
 Al escribir en el campo "Porcentaje (%)" no se debe permitir escribir caracteres especiales, ni puntos ni comas ni espacios. Solo se deben permitir numeros enteros entre 0 y 100.  
+
+--
+Al ajustar el saldo del presupuesto mensual, se debe actualizar el monto de la distribucion correspondiente. Por ejemplo, si se aumenta el saldo en 100, se debe aumentar el monto de la distribucion correspondiente en 100. Si se disminuye el saldo en 100, se debe disminuir el monto de la distribucion correspondiente en 100.  
+
+--
+Al ajustar el porcentaje de una distribucion, se debe actualizar el monto de la distribucion correspondiente. Por ejemplo, si se aumenta el porcentaje en 10, se debe aumentar el monto de la distribucion correspondiente en 10. Si se disminuye el porcentaje en 10, se debe disminuir el monto de la distribucion correspondiente en 10.  

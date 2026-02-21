@@ -30,19 +30,62 @@ public class SaldoPresupuestoService : ISaldoPresupuestoService
 
     public async Task<SaldoPresupuestoDto> CreateAsync(int presupuestoId, CreateSaldoPresupuestoDto dto)
     {
-        var saldo = new SaldoPresupuesto
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            PresupuestoMensualId = presupuestoId,
-            Monto   = dto.Monto,
-            Concepto = dto.Concepto,
-            Tipo    = dto.Tipo,
-            Fecha   = DateTime.Now
-        };
+            var saldo = new SaldoPresupuesto
+            {
+                PresupuestoMensualId = presupuestoId,
+                Monto = dto.Monto,
+                Concepto = dto.Concepto,
+                Tipo = dto.Tipo,
+                Fecha = DateTime.Now
+            };
 
-        _saldos.Add(saldo);
-        await _context.SaveChangesAsync();
+            _saldos.Add(saldo);
 
-        return MapToDto(saldo);
+            var presupuesto = await _context.Set<PresupuestoMensual>()
+                .Include(p => p.Distribuciones)
+                .FirstOrDefaultAsync(p => p.Id == presupuestoId);
+
+            if (presupuesto != null)
+            {
+                // 1. Actualizar el Monto Total
+                if (dto.Tipo == TipoMovimiento.Agregar)
+                    presupuesto.Monto += dto.Monto;
+                else
+                    presupuesto.Monto -= dto.Monto;
+
+                // 2. Aplicar el cambio a la categoría "Obligaciones" (Id=1)
+                var obligaciones = presupuesto.Distribuciones.FirstOrDefault(d => d.CategoriaPresupuestoId == 1);
+                if (obligaciones != null)
+                {
+                    if (dto.Tipo == TipoMovimiento.Agregar)
+                        obligaciones.Monto += dto.Monto;
+                    else
+                        obligaciones.Monto -= dto.Monto;
+                }
+
+                // 3. Recalcular los porcentajes de todas las categorías
+                foreach (var dist in presupuesto.Distribuciones)
+                {
+                    if (presupuesto.Monto > 0)
+                        dist.Porcentaje = Math.Round((dist.Monto / presupuesto.Monto) * 100, 2);
+                    else
+                        dist.Porcentaje = 0;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return MapToDto(saldo);
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -50,18 +93,60 @@ public class SaldoPresupuestoService : ISaldoPresupuestoService
         var saldo = await _saldos.FindAsync(id);
         if (saldo is null) return false;
 
-        _saldos.Remove(saldo);
-        await _context.SaveChangesAsync();
-        return true;
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var presupuesto = await _context.Set<PresupuestoMensual>()
+                .Include(p => p.Distribuciones)
+                .FirstOrDefaultAsync(p => p.Id == saldo.PresupuestoMensualId);
+
+            if (presupuesto != null)
+            {
+                // Revertir el Monto Total
+                if (saldo.Tipo == TipoMovimiento.Agregar)
+                    presupuesto.Monto -= saldo.Monto;
+                else
+                    presupuesto.Monto += saldo.Monto;
+
+                // Revertir de "Obligaciones" (Id=1)
+                var obligaciones = presupuesto.Distribuciones.FirstOrDefault(d => d.CategoriaPresupuestoId == 1);
+                if (obligaciones != null)
+                {
+                    if (saldo.Tipo == TipoMovimiento.Agregar)
+                        obligaciones.Monto -= saldo.Monto;
+                    else
+                        obligaciones.Monto += saldo.Monto;
+                }
+
+                // Recalcular porcentajes
+                foreach (var dist in presupuesto.Distribuciones)
+                {
+                    if (presupuesto.Monto > 0)
+                        dist.Porcentaje = Math.Round((dist.Monto / presupuesto.Monto) * 100, 2);
+                    else
+                        dist.Porcentaje = 0;
+                }
+            }
+
+            _saldos.Remove(saldo);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     private static SaldoPresupuestoDto MapToDto(SaldoPresupuesto s) => new()
     {
-        Id                    = s.Id,
-        PresupuestoMensualId  = s.PresupuestoMensualId,
-        Monto                 = s.Monto,
-        Concepto              = s.Concepto,
-        Tipo                  = s.Tipo,
-        Fecha                 = s.Fecha
+        Id = s.Id,
+        PresupuestoMensualId = s.PresupuestoMensualId,
+        Monto = s.Monto,
+        Concepto = s.Concepto,
+        Tipo = s.Tipo,
+        Fecha = s.Fecha
     };
 }
