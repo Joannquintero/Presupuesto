@@ -52,7 +52,9 @@
                         <label class="form-label fw-semibold">Monto Total <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text">$</span>
-                            <input type="text" class="form-control" inputmode="numeric"
+                            <input type="text" class="form-control" 
+                                   inputmode="numeric"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                    value="@montoTexto"
                                    @oninput="OnMontoInput"
                                    placeholder="0" />
@@ -107,10 +109,12 @@
                                         </td>
                                         <td>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" 
+                                                <input type="text" class="form-control text-center" 
+                                                       inputmode="numeric"
+                                                       maxlength="3"
+                                                       onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                                        value="@((int)dist.Porcentaje)" 
-                                                       @oninput="(e) => OnPorcentajeInput(dist, e)"
-                                                       min="0" max="100" step="1" />
+                                                       @oninput="(e) => OnPorcentajeInput(dist, e)" />
                                                 <span class="input-group-text">%</span>
                                             </div>
                                         </td>
