@@ -31,6 +31,13 @@ en el formulario de presupuesto mensual, realizar los siguientes cambios:
 3. El campo Concepto debe tener un maximo de 200 caracteres.
 4. Los mensajes de validacion deben ser en español.
 
+--
+Implementar funcionalidad para agregar o quitar saldos de presupuesto mensual. Debe tener los siguientes campos:
+
+- Monto (1000) - Decimal
+- Concepto (Concepto) - Texto opcional
+- Tipo (Agregar/Quitar) - Combobox  
+
 
 
 

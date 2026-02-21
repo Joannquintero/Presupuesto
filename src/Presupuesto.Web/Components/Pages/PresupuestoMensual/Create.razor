@@ -50,8 +50,10 @@
                         <label class="form-label fw-semibold">Monto <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text">$</span>
-                            <InputNumber class="form-control" @bind-Value="dto.Monto"
-                                         step="0.01" min="0.01" placeholder="0.00" />
+                            <input type="text" class="form-control" inputmode="numeric"
+                                   value="@montoTexto"
+                                   @oninput="OnMontoInput"
+                                   placeholder="0" />
                         </div>
                         <ValidationMessage For="() => dto.Monto" class="text-danger small" />
                     </div>
@@ -107,6 +109,8 @@
         { 9, "Septiembre" }, { 10, "Octubre" }, { 11, "Noviembre" }, { 12, "Diciembre" }
     };
 
+    private string montoTexto = string.Empty;
+
     protected override void OnInitialized()
     {
         dto.Anio = DateTime.Now.Year;
@@ -129,6 +133,27 @@
         finally
         {
             saving = false;
+        }
+    }
+
+    private void OnMontoInput(ChangeEventArgs e)
+    {
+        // Quitar todo excepto dígitos
+        var raw = e.Value?.ToString() ?? string.Empty;
+        var solo = new string(raw.Where(char.IsDigit).ToArray());
+
+        if (string.IsNullOrEmpty(solo))
+        {
+            dto.Monto = 0;
+            montoTexto = string.Empty;
+            return;
+        }
+
+        if (long.TryParse(solo, out var valor))
+        {
+            dto.Monto = valor;
+            // Formato con punto como separador de miles (es-CL)
+            montoTexto = valor.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
         }
     }
 }
