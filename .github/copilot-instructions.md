@@ -86,6 +86,25 @@ src/
 
 ## Convenciones de Código
 
+### Project-Specific Rules
+
+1. Siempre responde en español aunque el codigo este en ingles.
+2. Siempre incluir Plan Steps.
+3. Incluir comportamiento Esperado.
+4. Incluir Criterios de Aceptación.
+5. No crear comentarios que referencie a Gemini o Copilot en el codigo.
+6. Tener en cuenta las mejores practicas de desarrollo para optimizar SonarQube y Kiuwan.
+7. Tener en cuenta optimización de rendimiento para evitar problemas de rendimiento.
+8. Refactorizar métodos para reducir su complejidad cognitiva y mejorar su legibilidad para optimizar SonarQube y Kiuwan.
+9. Optimizar de logging para evitar problemas de rendimiento.
+10. Incluir duracion de la implementacion.
+11. Para las implementaciones tener en cuenta el modelo de capas (Services, Repositories, Models, etc).
+12. Para la logica de negocio, tener en cuenta el modelo entity framework existente.
+13. En los comentarios del código, usar español.
+14. Despues de la implementacion, incluir resumen de cambios implementados.
+16. Generar Código Limpio.  
+
+
 ### Idioma
 
 - El código fuente (variables, métodos, clases) está en **español**.
