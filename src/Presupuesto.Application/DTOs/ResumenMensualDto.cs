@@ -14,13 +14,10 @@ public class ResumenMensualDto
     public List<GastoPorCategoriaDto> GastosPorCategoria { get; set; } = new();
 }
 
-/// <summary>
-/// DTO para totales por categoría.
-/// </summary>
 public class GastoPorCategoriaDto
 {
-    public Categoria Categoria { get; set; }
-    public string CategoriaTexto => Categoria.ToString();
+    public int CategoriaPresupuestoId { get; set; }
+    public string CategoriaNombre { get; set; } = string.Empty;
     public decimal Total { get; set; }
     public int Cantidad { get; set; }
 }

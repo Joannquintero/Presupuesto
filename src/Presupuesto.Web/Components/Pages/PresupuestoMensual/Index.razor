@@ -2,8 +2,10 @@
 @using Presupuesto.Application.DTOs
 @using Presupuesto.Application.Services
 @using Presupuesto.Domain.Enums
+@using Presupuesto.Domain.Entities
 @inject IPresupuestoMensualService PresupuestoService
 @inject ISaldoPresupuestoService SaldoService
+@inject ICategoriaPresupuestoService CategoriaService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -180,6 +182,7 @@
                                     <tr>
                                         <th>Fecha</th>
                                         <th>Tipo</th>
+                                        <th>Categoría</th>
                                         <th class="text-end">Monto</th>
                                         <th>Concepto</th>
                                         <th class="text-center">Quitar</th>
@@ -194,6 +197,11 @@
                                             <td>
                                                 <span class="badge @(s.Tipo == TipoMovimiento.Agregar ? "bg-success" : "bg-danger")">
                                                     @s.TipoTexto
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">
+                                                    @s.CategoriaNombre
                                                 </span>
                                             </td>
                                             <td class="text-end fw-semibold">$ @s.Monto.ToString("N0")</td>
@@ -216,41 +224,56 @@
                     <EditForm Model="dtoSaldo" OnValidSubmit="GuardarSaldo" FormName="form-saldo">
                         <DataAnnotationsValidator />
 
-                        <div class="row g-3">
-                            <!-- Tipo -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
-                                <InputSelect class="form-select" @bind-Value="dtoSaldo.Tipo">
-                                    <option value="@TipoMovimiento.Agregar">Agregar</option>
-                                    <option value="@TipoMovimiento.Quitar">Quitar</option>
-                                </InputSelect>
-                                <ValidationMessage For="() => dtoSaldo.Tipo" class="text-danger small" />
-                            </div>
-
-                            <!-- Monto -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">Monto <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="text" class="form-control" 
-                                           inputmode="numeric"
-                                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                           value="@montoSaldoTexto"
-                                           @oninput="OnMontoSaldoInput"
-                                           placeholder="0" />
+                            <div class="row g-3">
+                                <!-- Categoría -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Categoría <span class="text-danger">*</span></label>
+                                    <InputSelect class="@categoriaSelectClass" @bind-Value="dtoSaldo.CategoriaPresupuestoId">
+                                        <option value="0">-- Seleccione --</option>
+                                        @foreach (var cat in categoriasPresupuesto)
+                                        {
+                                            <option value="@cat.Id">@cat.Nombre</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="() => dtoSaldo.CategoriaPresupuestoId" class="text-danger small" />
                                 </div>
-                                <ValidationMessage For="() => dtoSaldo.Monto" class="text-danger small" />
+
+                                <!-- Tipo -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
+                                    <InputSelect class="form-select" @bind-Value="dtoSaldo.Tipo">
+                                        <option value="@TipoMovimiento.Agregar">Agregar</option>
+                                        <option value="@TipoMovimiento.Quitar">Quitar</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="() => dtoSaldo.Tipo" class="text-danger small" />
+                                </div>
                             </div>
 
-                            <!-- Concepto -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">Concepto</label>
-                                <InputText class="form-control" @bind-Value="dtoSaldo.Concepto"
-                                           maxlength="200"
-                                           placeholder="Nota..." />
-                                <ValidationMessage For="() => dtoSaldo.Concepto" class="text-danger small" />
+                            <div class="row g-3 mt-1">
+                                <!-- Monto -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Monto <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" 
+                                               inputmode="numeric"
+                                               onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                               value="@montoSaldoTexto"
+                                               @oninput="OnMontoSaldoInput"
+                                               placeholder="0" />
+                                    </div>
+                                    <ValidationMessage For="() => dtoSaldo.Monto" class="text-danger small" />
+                                </div>
+
+                                <!-- Concepto -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Concepto</label>
+                                    <InputText class="form-control" @bind-Value="dtoSaldo.Concepto"
+                                               maxlength="200"
+                                               placeholder="Nota..." />
+                                    <ValidationMessage For="() => dtoSaldo.Concepto" class="text-danger small" />
+                                </div>
                             </div>
-                        </div>
 
                         @if (!string.IsNullOrEmpty(errorSaldo))
                         {
@@ -371,6 +394,7 @@
     private string? filtroAnio;
     private string? filtroMes;
     private string? busqueda;
+    private List<CategoriaPresupuesto> categoriasPresupuesto = new();
 
     // ── Eliminación ──────────────────────────────────────────────────────────
     private bool showDeleteModal = false;
@@ -387,6 +411,7 @@
     private bool showConfirmDeleteSaldoModal = false;
     private int idSaldoToDelete;
     private string? errorSaldo;
+    private string categoriaSelectClass => $"form-select {(dtoSaldo.CategoriaPresupuestoId == 0 ? "is-invalid" : "")}";
 
     private static readonly Dictionary<int, string> Meses = new()
     {
@@ -399,6 +424,7 @@
     {
         filtroAnio = DateTime.Now.Year.ToString();
         filtroMes = null;
+        categoriasPresupuesto = await CategoriaService.GetAllAsync();
         await Filtrar();
     }
 

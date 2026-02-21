@@ -9,8 +9,10 @@ public class GastoDto
 {
     public int Id { get; set; }
     public DateTime Fecha { get; set; }
-    public Categoria Categoria { get; set; }
-    public string CategoriaTexto => Categoria.ToString();
+    public int CategoriaPresupuestoId { get; set; }
+    public string? CategoriaPresupuestoNombre { get; set; }
+    public Categoria? SubCategoria { get; set; }
+    public string CategoriaTexto => SubCategoria.HasValue ? SubCategoria.Value.ToString() : (CategoriaPresupuestoNombre ?? string.Empty);
     public string Descripcion { get; set; } = string.Empty;
     public decimal Monto { get; set; }
 }

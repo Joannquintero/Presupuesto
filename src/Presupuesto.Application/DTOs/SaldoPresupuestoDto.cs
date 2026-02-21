@@ -9,6 +9,8 @@ public class SaldoPresupuestoDto
 {
     public int Id { get; set; }
     public int PresupuestoMensualId { get; set; }
+    public int CategoriaPresupuestoId { get; set; }
+    public string? CategoriaNombre { get; set; }
     public decimal Monto { get; set; }
     public string? Concepto { get; set; }
     public TipoMovimiento Tipo { get; set; }

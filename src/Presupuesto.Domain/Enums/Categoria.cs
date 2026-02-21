@@ -8,6 +8,6 @@ public enum Categoria
     Alimentacion = 1,
     Transporte = 2,
     Servicios = 3,
-    Entretenimiento = 4,
+    Vivienda = 4,
     Otros = 5
 }

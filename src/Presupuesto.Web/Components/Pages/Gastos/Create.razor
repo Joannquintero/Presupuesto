@@ -2,6 +2,9 @@
 @using Presupuesto.Application.DTOs
 @using Presupuesto.Application.Services
 @using Presupuesto.Domain.Enums
+@using Presupuesto.Domain.Entities
+@inject IPresupuestoMensualService PresupuestoService
+@inject ICategoriaPresupuestoService CategoriaPresupuestoService
 @inject IGastoService GastoService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
@@ -20,29 +23,47 @@
                 <div class="card-body">
                     <EditForm Model="gasto" OnValidSubmit="HandleSubmit" FormName="CreateGasto">
                         <DataAnnotationsValidator />
-                        <ValidationSummary class="alert alert-danger" />
 
                         <div class="mb-3">
-                            <label class="form-label">Fecha</label>
+                            <label class="form-label fw-semibold">Fecha</label>
                             <InputDate class="form-control" @bind-Value="gasto.Fecha" />
-                            <ValidationMessage For="() => gasto.Fecha" class="text-danger" />
+                            <ValidationMessage For="() => gasto.Fecha" class="text-danger small" />
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Categoría</label>
-                            <InputSelect class="form-select" @bind-Value="gasto.Categoria">
-                                @foreach (Categoria cat in Enum.GetValues<Categoria>())
+                            <label class="form-label fw-semibold">Categoría</label>
+                            <InputSelect class="@selectClass" 
+                                         ValueExpression="@(() => gasto.CategoriaPresupuestoId)"
+                                         Value="@gasto.CategoriaPresupuestoId"
+                                         ValueChanged="@((int val) => OnCategoriaChanged(val))">
+                                <option value="0">-- Seleccione Categoría --</option>
+                                @foreach (var cat in categoriasPresupuesto)
                                 {
-                                    <option value="@cat">@cat.ToString()</option>
+                                    <option value="@cat.Id">@cat.Nombre</option>
                                 }
                             </InputSelect>
-                            <ValidationMessage For="() => gasto.Categoria" class="text-danger" />
+                            <ValidationMessage For="() => gasto.CategoriaPresupuestoId" class="text-danger small" />
+
+                            @if (categoriaEsObligaciones)
+                            {
+                                <div class="mt-2 animate__animated animate__fadeIn">
+                                    <label class="form-label small text-muted">Tipo de Obligación</label>
+                                    <InputSelect class="form-select" @bind-Value="gasto.SubCategoria">
+                                        <option value="">-- Seleccione Tipo --</option>
+                                        @foreach (Categoria sub in Enum.GetValues<Categoria>())
+                                        {
+                                            <option value="@sub">@sub.ToString()</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="() => gasto.SubCategoria" class="text-danger small" />
+                                </div>
+                            }
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Descripción</label>
+                            <label class="form-label fw-semibold">Descripción</label>
                             <InputText class="form-control" @bind-Value="gasto.Descripcion" placeholder="Ej: Compras en supermercado" />
-                            <ValidationMessage For="() => gasto.Descripcion" class="text-danger" />
+                            <ValidationMessage For="() => gasto.Descripcion" class="text-danger small" />
                         </div>
 
                         <div class="mb-3">
@@ -50,12 +71,12 @@
                                 <i class="bi bi-cash-stack me-1"></i>Montos Rápidos
                             </label>
                             <div class="billete-grid">
-                                @foreach (var monto in montosPredefinidos)
+                                @foreach (var m in montosPredefinidos)
                                 {
-                                    var colorClass = GetBilleteColor(monto);
-                                    var isSelected = gasto.Monto == monto;
+                                    var colorClass = GetBilleteColor(m);
+                                    var isSelected = gasto.Monto == m;
                                     <div class="billete @colorClass @(isSelected ? "billete-selected" : "")"
-                                         @onclick="() => SeleccionarMonto(monto)">
+                                         @onclick="() => SeleccionarMonto(m)">
                                         <div class="billete-pattern"></div>
                                         <div class="billete-corner billete-corner-tl"></div>
                                         <div class="billete-corner billete-corner-tr"></div>
@@ -63,7 +84,7 @@
                                         <div class="billete-corner billete-corner-br"></div>
                                         <div class="billete-content">
                                             <span class="billete-currency">$</span>
-                                            <span class="billete-amount">@monto.ToString("N0")</span>
+                                            <span class="billete-amount">@m.ToString("N0")</span>
                                         </div>
                                         <div class="billete-label">COP</div>
                                         @if (isSelected)
@@ -78,28 +99,36 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">Monto</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <InputNumber class="form-control" @bind-Value="gasto.Monto" step="0.01" />
+                            <label class="form-label fw-semibold">Monto</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light text-primary fw-bold">$</span>
+                                <input type="text" class="form-control fw-bold text-primary" 
+                                       inputmode="numeric"
+                                       pattern="[0-9]*"
+                                       onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                       value="@montoFormateado"
+                                       @oninput="OnMontoInput"
+                                       placeholder="0" />
                             </div>
-                            <ValidationMessage For="() => gasto.Monto" class="text-danger" />
+                            <ValidationMessage For="() => gasto.Monto" class="text-danger small" />
                         </div>
 
                         @if (!string.IsNullOrEmpty(errorMessage))
                         {
-                            <div class="alert alert-danger">@errorMessage</div>
+                            <div class="alert alert-danger animate__animated animate__shakeX">
+                                <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+                            </div>
                         }
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary" disabled="@saving">
+                            <button type="submit" class="btn btn-primary px-4" disabled="@(saving || gasto.Monto <= 0 || gasto.CategoriaPresupuestoId == 0)">
                                 @if (saving)
                                 {
                                     <span class="spinner-border spinner-border-sm me-1"></span>
                                 }
-                                <i class="bi bi-check-lg me-1"></i>Guardar
+                                <i class="bi bi-check-lg me-1"></i>Guardar Gasto
                             </button>
-                            <a href="/gastos" class="btn btn-outline-secondary">
+                            <a href="/gastos" class="btn btn-outline-secondary px-4">
                                 <i class="bi bi-x-lg me-1"></i>Cancelar
                             </a>
                         </div>
@@ -112,13 +141,50 @@
 
 @code {
     private CreateUpdateGastoDto gasto = new();
+    private List<CategoriaPresupuesto> categoriasPresupuesto = new();
     private bool saving = false;
     private string? errorMessage;
     private decimal[] montosPredefinidos = { 5000, 10000, 20000, 50000, 100000 };
+    private string montoFormateado = "0";
 
-    private void SeleccionarMonto(decimal monto)
+    private string selectClass => $"form-select {(categoriaEsObligaciones ? "mb-2" : "")}";
+    private bool categoriaEsObligaciones => categoriasPresupuesto.FirstOrDefault(c => c.Id == gasto.CategoriaPresupuestoId)?.Nombre == "Obligaciones";
+
+    protected override async Task OnInitializedAsync()
     {
-        gasto.Monto = monto;
+        categoriasPresupuesto = await CategoriaPresupuestoService.GetAllAsync();
+    }
+
+    private void OnCategoriaChanged(int id)
+    {
+        gasto.CategoriaPresupuestoId = id;
+        if (!categoriaEsObligaciones)
+        {
+            gasto.SubCategoria = null;
+        }
+    }
+
+    private void SeleccionarMonto(decimal m)
+    {
+        gasto.Monto = m;
+        montoFormateado = m.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
+    }
+
+    private void OnMontoInput(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString() ?? string.Empty;
+        var soloNumeros = new string(val.Where(char.IsDigit).ToArray());
+
+        if (decimal.TryParse(soloNumeros, out var monto))
+        {
+            gasto.Monto = monto;
+            montoFormateado = monto.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
+        }
+        else
+        {
+            gasto.Monto = 0;
+            montoFormateado = "0";
+        }
     }
 
     private string GetBilleteColor(decimal monto) => monto switch
@@ -133,6 +199,24 @@
 
     private async Task HandleSubmit()
     {
+        if (gasto.Monto <= 0)
+        {
+            errorMessage = "El monto debe ser mayor a 0.";
+            return;
+        }
+
+        if (gasto.CategoriaPresupuestoId == 0)
+        {
+            errorMessage = "Debe seleccionar una categoría.";
+            return;
+        }
+
+        if (categoriaEsObligaciones && !gasto.SubCategoria.HasValue)
+        {
+            errorMessage = "Debe seleccionar el tipo de obligación.";
+            return;
+        }
+
         saving = true;
         errorMessage = null;
         try

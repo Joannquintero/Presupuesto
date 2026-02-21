@@ -139,9 +139,9 @@
         {
             int? anio = string.IsNullOrEmpty(filtroAnio) ? null : int.Parse(filtroAnio);
             int? mes = string.IsNullOrEmpty(filtroMes) ? null : int.Parse(filtroMes);
-            Categoria? categoria = string.IsNullOrEmpty(filtroCategoria) ? null : (Categoria)int.Parse(filtroCategoria);
+            Categoria? subCategoria = string.IsNullOrEmpty(filtroCategoria) ? null : (Categoria)int.Parse(filtroCategoria);
 
-            gastos = await GastoService.GetByFilterAsync(anio, mes, categoria);
+            gastos = await GastoService.GetByFilterAsync(anio, mes, subCategoria);
         }
         catch (Exception ex)
         {

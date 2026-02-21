@@ -136,8 +136,8 @@
                                         var porcentaje = resumen.TotalMes > 0 ? (item.Total / resumen.TotalMes * 100) : 0;
                                         <tr>
                                             <td>
-                                                <span class="badge @GetCategoriaBadgeClass(item.Categoria)">
-                                                    @item.CategoriaTexto
+                                                <span class="badge @GetCategoriaBadgeClass(item.CategoriaNombre)">
+                                                    @item.CategoriaNombre
                                                 </span>
                                             </td>
                                             <td class="text-center">@item.Cantidad</td>
@@ -164,8 +164,8 @@
                                 var porcentaje = resumen.TotalMes > 0 ? (item.Total / resumen.TotalMes * 100) : 0;
                                 <div class="desglose-card">
                                     <div class="desglose-card-header">
-                                        <span class="badge @GetCategoriaBadgeClass(item.Categoria)">
-                                            @item.CategoriaTexto
+                                        <span class="badge @GetCategoriaBadgeClass(item.CategoriaNombre)">
+                                            @item.CategoriaNombre
                                         </span>
                                         <span class="desglose-card-cantidad">
                                             @item.Cantidad @(item.Cantidad == 1 ? "gasto" : "gastos")
@@ -176,7 +176,7 @@
                                         <span class="desglose-card-pct">@porcentaje.ToString("F1")%</span>
                                     </div>
                                     <div class="desglose-bar-track">
-                                        <div class="desglose-bar-fill @GetCategoriaBarClass(item.Categoria)"
+                                        <div class="desglose-bar-fill @GetCategoriaBarClass(item.CategoriaNombre)"
                                              style="width: @porcentaje.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)%"></div>
                                     </div>
                                 </div>
@@ -259,40 +259,37 @@
     {
         if (resumen is null) return;
 
-        var labels = resumen.GastosPorCategoria.Select(g => g.CategoriaTexto).ToArray();
+        var labels = resumen.GastosPorCategoria.Select(g => g.CategoriaNombre).ToArray();
         var data = resumen.GastosPorCategoria.Select(g => (double)g.Total).ToArray();
-        var colors = resumen.GastosPorCategoria.Select(g => GetCategoriaColor(g.Categoria)).ToArray();
+        var colors = resumen.GastosPorCategoria.Select(g => GetCategoriaColor(g.CategoriaNombre)).ToArray();
 
         await JS.InvokeVoidAsync("renderPieChart", "chartCategorias", labels, data, colors);
     }
 
-    private string GetCategoriaBadgeClass(Categoria categoria) => categoria switch
+    private string GetCategoriaBadgeClass(string nombre) => nombre switch
     {
-        Categoria.Alimentacion => "bg-success",
-        Categoria.Transporte => "bg-primary",
-        Categoria.Servicios => "bg-info",
-        Categoria.Entretenimiento => "bg-warning text-dark",
-        Categoria.Otros => "bg-secondary",
+        "Obligaciones" => "bg-success",
+        "Gustos personales" => "bg-primary",
+        "Metas-Ahorro" => "bg-info",
+        "Imprevistos" => "bg-warning text-dark",
         _ => "bg-secondary"
     };
 
-    private string GetCategoriaColor(Categoria categoria) => categoria switch
+    private string GetCategoriaColor(string nombre) => nombre switch
     {
-        Categoria.Alimentacion => "#198754",
-        Categoria.Transporte => "#0d6efd",
-        Categoria.Servicios => "#0dcaf0",
-        Categoria.Entretenimiento => "#ffc107",
-        Categoria.Otros => "#6c757d",
+        "Obligaciones" => "#198754",
+        "Gustos personales" => "#0d6efd",
+        "Metas-Ahorro" => "#0dcaf0",
+        "Imprevistos" => "#ffc107",
         _ => "#6c757d"
     };
 
-    private string GetCategoriaBarClass(Categoria categoria) => categoria switch
+    private string GetCategoriaBarClass(string nombre) => nombre switch
     {
-        Categoria.Alimentacion => "bar-success",
-        Categoria.Transporte => "bar-primary",
-        Categoria.Servicios => "bar-info",
-        Categoria.Entretenimiento => "bar-warning",
-        Categoria.Otros => "bar-secondary",
+        "Obligaciones" => "bar-success",
+        "Gustos personales" => "bar-primary",
+        "Metas-Ahorro" => "bar-info",
+        "Imprevistos" => "bar-warning",
         _ => "bar-secondary"
     };
 }

@@ -11,8 +11,8 @@ using Presupuesto.Infrastructure.Data;
 namespace Presupuesto.Infrastructure.Migrations
 {
     [DbContext(typeof(PresupuestoDbContext))]
-    [Migration("20260221022536_AddBudgetDistributions")]
-    partial class AddBudgetDistributions
+    [Migration("20260221041137_UpdateSaldoWithCategory")]
+    partial class UpdateSaldoWithCategory
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -98,7 +98,7 @@ namespace Presupuesto.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Categoria")
+                    b.Property<int>("CategoriaPresupuestoId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Descripcion")
@@ -113,7 +113,12 @@ namespace Presupuesto.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("SubCategoria")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoriaPresupuestoId");
 
                     b.ToTable("Gastos");
 
@@ -121,31 +126,34 @@ namespace Presupuesto.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Categoria = 1,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Supermercado semanal",
                             Fecha = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 150.50m
+                            Monto = 150.50m,
+                            SubCategoria = 1
                         },
                         new
                         {
                             Id = 2,
-                            Categoria = 2,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Gasolina",
                             Fecha = new DateTime(2026, 2, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 80.00m
+                            Monto = 80.00m,
+                            SubCategoria = 2
                         },
                         new
                         {
                             Id = 3,
-                            Categoria = 3,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Factura de luz",
                             Fecha = new DateTime(2026, 2, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 65.30m
+                            Monto = 65.30m,
+                            SubCategoria = 3
                         },
                         new
                         {
                             Id = 4,
-                            Categoria = 4,
+                            CategoriaPresupuestoId = 2,
                             Descripcion = "Cine y cena",
                             Fecha = new DateTime(2026, 2, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Monto = 45.00m
@@ -153,47 +161,52 @@ namespace Presupuesto.Infrastructure.Migrations
                         new
                         {
                             Id = 5,
-                            Categoria = 1,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Restaurante",
                             Fecha = new DateTime(2026, 2, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 32.50m
+                            Monto = 32.50m,
+                            SubCategoria = 1
                         },
                         new
                         {
                             Id = 6,
-                            Categoria = 3,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Internet",
                             Fecha = new DateTime(2026, 2, 13, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 55.00m
+                            Monto = 55.00m,
+                            SubCategoria = 3
                         },
                         new
                         {
                             Id = 7,
-                            Categoria = 5,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Medicinas",
                             Fecha = new DateTime(2026, 2, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 28.75m
+                            Monto = 28.75m,
+                            SubCategoria = 5
                         },
                         new
                         {
                             Id = 8,
-                            Categoria = 1,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Compras mensuales",
                             Fecha = new DateTime(2026, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 200.00m
+                            Monto = 200.00m,
+                            SubCategoria = 1
                         },
                         new
                         {
                             Id = 9,
-                            Categoria = 2,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Mantenimiento auto",
                             Fecha = new DateTime(2026, 1, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 120.00m
+                            Monto = 120.00m,
+                            SubCategoria = 2
                         },
                         new
                         {
                             Id = 10,
-                            Categoria = 4,
+                            CategoriaPresupuestoId = 2,
                             Descripcion = "Concierto",
                             Fecha = new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Monto = 75.00m
@@ -201,15 +214,16 @@ namespace Presupuesto.Infrastructure.Migrations
                         new
                         {
                             Id = 11,
-                            Categoria = 3,
+                            CategoriaPresupuestoId = 1,
                             Descripcion = "Agua y gas",
                             Fecha = new DateTime(2026, 1, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 48.50m
+                            Monto = 48.50m,
+                            SubCategoria = 3
                         },
                         new
                         {
                             Id = 12,
-                            Categoria = 5,
+                            CategoriaPresupuestoId = 5,
                             Descripcion = "Regalos",
                             Fecha = new DateTime(2026, 1, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Monto = 60.00m
@@ -253,6 +267,9 @@ namespace Presupuesto.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("CategoriaPresupuestoId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Concepto")
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
@@ -271,6 +288,8 @@ namespace Presupuesto.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoriaPresupuestoId");
 
                     b.HasIndex("PresupuestoMensualId");
 
@@ -296,13 +315,32 @@ namespace Presupuesto.Infrastructure.Migrations
                     b.Navigation("PresupuestoMensual");
                 });
 
+            modelBuilder.Entity("Presupuesto.Domain.Entities.Gasto", b =>
+                {
+                    b.HasOne("Presupuesto.Domain.Entities.CategoriaPresupuesto", "CategoriaPresupuesto")
+                        .WithMany()
+                        .HasForeignKey("CategoriaPresupuestoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CategoriaPresupuesto");
+                });
+
             modelBuilder.Entity("Presupuesto.Domain.Entities.SaldoPresupuesto", b =>
                 {
+                    b.HasOne("Presupuesto.Domain.Entities.CategoriaPresupuesto", "CategoriaPresupuesto")
+                        .WithMany()
+                        .HasForeignKey("CategoriaPresupuestoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Presupuesto.Domain.Entities.PresupuestoMensual", "PresupuestoMensual")
                         .WithMany("Saldos")
                         .HasForeignKey("PresupuestoMensualId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CategoriaPresupuesto");
 
                     b.Navigation("PresupuestoMensual");
                 });

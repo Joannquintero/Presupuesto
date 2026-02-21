@@ -13,6 +13,9 @@ public class SaldoPresupuesto
     [Required]
     public int PresupuestoMensualId { get; set; }
 
+    [Required(ErrorMessage = "La categoría es obligatoria")]
+    public int CategoriaPresupuestoId { get; set; }
+
     [Required(ErrorMessage = "El monto es obligatorio")]
     [Range(0.01, 999999999.99, ErrorMessage = "El monto debe ser mayor a 0")]
     [DataType(DataType.Currency)]
@@ -28,4 +31,5 @@ public class SaldoPresupuesto
 
     // Navegación
     public PresupuestoMensual PresupuestoMensual { get; set; } = null!;
+    public CategoriaPresupuesto CategoriaPresupuesto { get; set; } = null!;
 }

@@ -5,26 +5,10 @@
 namespace Presupuesto.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class RemoveCategoryFromSaldo : Migration
+    public partial class UpdateSaldoWithCategory : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_SaldosPresupuesto_CategoriasPresupuesto_CategoriaPresupuestoId",
-                table: "SaldosPresupuesto");
-
-            migrationBuilder.DropIndex(
-                name: "IX_SaldosPresupuesto_CategoriaPresupuestoId",
-                table: "SaldosPresupuesto");
-
-            migrationBuilder.DropColumn(
-                name: "CategoriaPresupuestoId",
-                table: "SaldosPresupuesto");
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
                 name: "CategoriaPresupuestoId",
@@ -44,7 +28,23 @@ namespace Presupuesto.Infrastructure.Migrations
                 column: "CategoriaPresupuestoId",
                 principalTable: "CategoriasPresupuesto",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+                onDelete: ReferentialAction.Cascade);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropForeignKey(
+                name: "FK_SaldosPresupuesto_CategoriasPresupuesto_CategoriaPresupuestoId",
+                table: "SaldosPresupuesto");
+
+            migrationBuilder.DropIndex(
+                name: "IX_SaldosPresupuesto_CategoriaPresupuestoId",
+                table: "SaldosPresupuesto");
+
+            migrationBuilder.DropColumn(
+                name: "CategoriaPresupuestoId",
+                table: "SaldosPresupuesto");
         }
     }
 }

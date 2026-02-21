@@ -23,14 +23,15 @@ public class GastoService : IGastoService
     public async Task<List<GastoDto>> GetAllAsync()
     {
         return await _gastos
+            .Include(g => g.CategoriaPresupuesto)
             .OrderByDescending(g => g.Fecha)
             .Select(g => MapToDto(g))
             .ToListAsync();
     }
 
-    public async Task<List<GastoDto>> GetByFilterAsync(int? anio, int? mes, Categoria? categoria)
+    public async Task<List<GastoDto>> GetByFilterAsync(int? anio, int? mes, Categoria? subCategoria)
     {
-        var query = _gastos.AsQueryable();
+        var query = _gastos.Include(g => g.CategoriaPresupuesto).AsQueryable();
 
         if (anio.HasValue)
             query = query.Where(g => g.Fecha.Year == anio.Value);
@@ -38,8 +39,8 @@ public class GastoService : IGastoService
         if (mes.HasValue)
             query = query.Where(g => g.Fecha.Month == mes.Value);
 
-        if (categoria.HasValue)
-            query = query.Where(g => g.Categoria == categoria.Value);
+        if (subCategoria.HasValue)
+            query = query.Where(g => g.SubCategoria == subCategoria.Value);
 
         return await query
             .OrderByDescending(g => g.Fecha)
@@ -49,7 +50,9 @@ public class GastoService : IGastoService
 
     public async Task<GastoDto?> GetByIdAsync(int id)
     {
-        var gasto = await _gastos.FindAsync(id);
+        var gasto = await _gastos
+            .Include(g => g.CategoriaPresupuesto)
+            .FirstOrDefaultAsync(g => g.Id == id);
         return gasto is null ? null : MapToDto(gasto);
     }
 
@@ -58,13 +61,17 @@ public class GastoService : IGastoService
         var gasto = new Gasto
         {
             Fecha = dto.Fecha,
-            Categoria = dto.Categoria,
+            CategoriaPresupuestoId = dto.CategoriaPresupuestoId,
+            SubCategoria = dto.SubCategoria,
             Descripcion = dto.Descripcion,
             Monto = dto.Monto
         };
 
         _gastos.Add(gasto);
         await _context.SaveChangesAsync();
+
+        // Cargar navegación para el MapToDto
+        await _context.Entry(gasto).Reference(g => g.CategoriaPresupuesto).LoadAsync();
 
         return MapToDto(gasto);
     }
@@ -75,11 +82,14 @@ public class GastoService : IGastoService
         if (gasto is null) return null;
 
         gasto.Fecha = dto.Fecha;
-        gasto.Categoria = dto.Categoria;
+        gasto.CategoriaPresupuestoId = dto.CategoriaPresupuestoId;
+        gasto.SubCategoria = dto.SubCategoria;
         gasto.Descripcion = dto.Descripcion;
         gasto.Monto = dto.Monto;
 
         await _context.SaveChangesAsync();
+        await _context.Entry(gasto).Reference(g => g.CategoriaPresupuesto).LoadAsync();
+        
         return MapToDto(gasto);
     }
 
@@ -96,6 +106,7 @@ public class GastoService : IGastoService
     public async Task<ResumenMensualDto> GetResumenMensualAsync(int anio, int mes)
     {
         var gastosMes = await _gastos
+            .Include(g => g.CategoriaPresupuesto)
             .Where(g => g.Fecha.Year == anio && g.Fecha.Month == mes)
             .ToListAsync();
 
@@ -106,10 +117,11 @@ public class GastoService : IGastoService
             MesNombre = new DateTime(anio, mes, 1).ToString("MMMM", new CultureInfo("es-ES")),
             TotalMes = gastosMes.Sum(g => g.Monto),
             GastosPorCategoria = gastosMes
-                .GroupBy(g => g.Categoria)
+                .GroupBy(g => g.CategoriaPresupuestoId)
                 .Select(group => new GastoPorCategoriaDto
                 {
-                    Categoria = group.Key,
+                    CategoriaPresupuestoId = group.Key,
+                    CategoriaNombre = group.First().CategoriaPresupuesto?.Nombre ?? "Sin Categoría",
                     Total = group.Sum(g => g.Monto),
                     Cantidad = group.Count()
                 })
@@ -131,7 +143,9 @@ public class GastoService : IGastoService
     {
         Id = gasto.Id,
         Fecha = gasto.Fecha,
-        Categoria = gasto.Categoria,
+        CategoriaPresupuestoId = gasto.CategoriaPresupuestoId,
+        CategoriaPresupuestoNombre = gasto.CategoriaPresupuesto?.Nombre,
+        SubCategoria = gasto.SubCategoria,
         Descripcion = gasto.Descripcion,
         Monto = gasto.Monto
     };

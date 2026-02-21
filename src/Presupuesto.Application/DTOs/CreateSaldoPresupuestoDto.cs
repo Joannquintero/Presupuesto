@@ -8,6 +8,9 @@ namespace Presupuesto.Application.DTOs;
 /// </summary>
 public class CreateSaldoPresupuestoDto
 {
+    [Required(ErrorMessage = "La categoría es obligatoria")]
+    public int CategoriaPresupuestoId { get; set; }
+
     [Required(ErrorMessage = "El monto es obligatorio")]
     [Range(0.01, 999999999.99, ErrorMessage = "El monto debe ser mayor a 0")]
     public decimal Monto { get; set; }

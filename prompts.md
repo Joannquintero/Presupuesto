@@ -88,3 +88,20 @@ Al ajustar el porcentaje de una distribucion, se debe actualizar el monto de la 
 
 --
 No se debe permitir guardar el presupuesto mensual si ya hay un presupuesto mensual para el mismo año y mes.  
+
+--
+En el formulario para crear o editar un gasto, realizar los siguientes cambios:
+
+1. El campo "Monto" no debe permitir valores negativos, ni puntos ni comas ni caracteres especiales. 
+2. No se debe permitir crear o editar gastos con monto 0.
+3. Se debe agregar un campo para seleccionar la categoria del gasto.    
+4. Si se selecciona la categoria "Obligaciones", se debe mostrar un combo box con las siguientes opciones:
+- Alimentacion
+- Transporte
+- Servicios
+- Otros
+
+Estas opciones se deben guardar en la base de datos como categorias de obligaciones.    
+5. Si se selecciona una categoria diferente a "Obligaciones", se debe ocultar el combo box de categorias de obligaciones
+
+6. El campo "Monto" debe tener un formato de moneda y solo debe abrir el teclado numerico en dispositivos moviles al editarlo.  

@@ -29,7 +29,7 @@ else
                         <tr>
                             <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <span class="badge @GetCategoriaBadgeClass(gasto.Categoria)">
+                                <span class="badge @GetCategoriaBadgeClass(gasto.CategoriaPresupuestoNombre)">
                                     @gasto.CategoriaTexto
                                 </span>
                             </td>
@@ -63,7 +63,7 @@ else
         {
             <div class="gasto-card">
                 <div class="gasto-card-top">
-                    <span class="badge @GetCategoriaBadgeClass(gasto.Categoria)">
+                    <span class="badge @GetCategoriaBadgeClass(gasto.CategoriaPresupuestoNombre)">
                         @gasto.CategoriaTexto
                     </span>
                     <span class="gasto-card-fecha">
@@ -106,13 +106,12 @@ else
     [Parameter]
     public EventCallback<int> OnDelete { get; set; }
 
-    private string GetCategoriaBadgeClass(Categoria categoria) => categoria switch
+    private string GetCategoriaBadgeClass(string? nombre) => nombre switch
     {
-        Categoria.Alimentacion => "bg-success",
-        Categoria.Transporte => "bg-primary",
-        Categoria.Servicios => "bg-info",
-        Categoria.Entretenimiento => "bg-warning text-dark",
-        Categoria.Otros => "bg-secondary",
+        "Obligaciones" => "bg-success",
+        "Gustos personales" => "bg-primary",
+        "Metas-Ahorro" => "bg-info",
+        "Imprevistos" => "bg-warning text-dark",
         _ => "bg-secondary"
     };
 }

@@ -5,8 +5,8 @@ C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Doma
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.AssemblyInfoInputs.cache
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.AssemblyInfo.cs
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.csproj.CoreCompileInputs.cache
+C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.sourcelink.json
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.dll
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\refint\Presupuesto.Domain.dll
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.pdb
 C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\ref\Presupuesto.Domain.dll
-C:\Projects\Presupuesto\src\Presupuesto.Domain\obj\Debug\net8.0\Presupuesto.Domain.sourcelink.json

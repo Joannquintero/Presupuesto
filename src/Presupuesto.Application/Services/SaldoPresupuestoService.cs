@@ -22,6 +22,7 @@ public class SaldoPresupuestoService : ISaldoPresupuestoService
     public async Task<List<SaldoPresupuestoDto>> GetByPresupuestoIdAsync(int presupuestoId)
     {
         return await _saldos
+            .Include(s => s.CategoriaPresupuesto)
             .Where(s => s.PresupuestoMensualId == presupuestoId)
             .OrderByDescending(s => s.Fecha)
             .Select(s => MapToDto(s))
@@ -36,6 +37,7 @@ public class SaldoPresupuestoService : ISaldoPresupuestoService
             var saldo = new SaldoPresupuesto
             {
                 PresupuestoMensualId = presupuestoId,
+                CategoriaPresupuestoId = dto.CategoriaPresupuestoId,
                 Monto = dto.Monto,
                 Concepto = dto.Concepto,
                 Tipo = dto.Tipo,
@@ -50,33 +52,42 @@ public class SaldoPresupuestoService : ISaldoPresupuestoService
 
             if (presupuesto != null)
             {
-                // 1. Actualizar el Monto Total
+                // 1. Actualizar el Monto Total del presupuesto
                 if (dto.Tipo == TipoMovimiento.Agregar)
                     presupuesto.Monto += dto.Monto;
                 else
                     presupuesto.Monto -= dto.Monto;
 
-                // 2. Aplicar el cambio a la categoría "Obligaciones" (Id=1)
-                var obligaciones = presupuesto.Distribuciones.FirstOrDefault(d => d.CategoriaPresupuestoId == 1);
-                if (obligaciones != null)
+                // 2. Aplicar el cambio a la categoría correspondiente
+                var distribucion = presupuesto.Distribuciones.FirstOrDefault(d => d.CategoriaPresupuestoId == dto.CategoriaPresupuestoId);
+                if (distribucion != null)
                 {
                     if (dto.Tipo == TipoMovimiento.Agregar)
-                        obligaciones.Monto += dto.Monto;
+                        distribucion.Monto += dto.Monto;
                     else
-                        obligaciones.Monto -= dto.Monto;
+                        distribucion.Monto -= dto.Monto;
                 }
 
-                // 3. Recalcular los porcentajes de todas las categorías
+                // 3. Recalcular los porcentajes de todas las categorías basado en el nuevo total
                 foreach (var dist in presupuesto.Distribuciones)
                 {
                     if (presupuesto.Monto > 0)
+                    {
+                        // Usamos decimal para mayor precisión antes de redondear (opcionalmente a 0 decimales si la regla es estricta)
                         dist.Porcentaje = Math.Round((dist.Monto / presupuesto.Monto) * 100, 2);
+                    }
                     else
+                    {
                         dist.Porcentaje = 0;
+                    }
                 }
             }
 
             await _context.SaveChangesAsync();
+            
+            // Recargar para incluir navegación de categoría
+            await _context.Entry(saldo).Reference(s => s.CategoriaPresupuesto).LoadAsync();
+            
             await transaction.CommitAsync();
 
             return MapToDto(saldo);
@@ -108,14 +119,14 @@ public class SaldoPresupuestoService : ISaldoPresupuestoService
                 else
                     presupuesto.Monto += saldo.Monto;
 
-                // Revertir de "Obligaciones" (Id=1)
-                var obligaciones = presupuesto.Distribuciones.FirstOrDefault(d => d.CategoriaPresupuestoId == 1);
-                if (obligaciones != null)
+                // Revertir de la categoría correspondiente
+                var distribucion = presupuesto.Distribuciones.FirstOrDefault(d => d.CategoriaPresupuestoId == saldo.CategoriaPresupuestoId);
+                if (distribucion != null)
                 {
                     if (saldo.Tipo == TipoMovimiento.Agregar)
-                        obligaciones.Monto -= saldo.Monto;
+                        distribucion.Monto -= saldo.Monto;
                     else
-                        obligaciones.Monto += saldo.Monto;
+                        distribucion.Monto += saldo.Monto;
                 }
 
                 // Recalcular porcentajes
@@ -144,6 +155,8 @@ public class SaldoPresupuestoService : ISaldoPresupuestoService
     {
         Id = s.Id,
         PresupuestoMensualId = s.PresupuestoMensualId,
+        CategoriaPresupuestoId = s.CategoriaPresupuestoId,
+        CategoriaNombre = s.CategoriaPresupuesto?.Nombre,
         Monto = s.Monto,
         Concepto = s.Concepto,
         Tipo = s.Tipo,
