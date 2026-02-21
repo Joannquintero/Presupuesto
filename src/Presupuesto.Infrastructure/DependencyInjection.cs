@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IGastoService, GastoService>();
         services.AddScoped<IPresupuestoMensualService, PresupuestoMensualService>();
         services.AddScoped<ISaldoPresupuestoService, SaldoPresupuestoService>();
+        services.AddScoped<ICategoriaPresupuestoService, CategoriaPresupuestoService>();
 
         return services;
     }

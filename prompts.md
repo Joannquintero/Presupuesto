@@ -41,8 +41,34 @@ Implementar funcionalidad para agregar o quitar saldos de presupuesto mensual. D
 -- 
 Implementar la funcionalidad para distribuir el presupuesto mensual entre diferentes categorias. Tener en cuenta lo siguiente:
 
-1.    
+1. Se debe mostrar una seccion para distribuir el presupuesto mensual entre diferentes categorias.
 
+2. La distribucion se debe hacer con base en porcentajes sobre el monto total del presupuesto mensual.
+
+4. Los campos deben ser:
+- Categoria (Combobox)
+- Porcentaje (Decimal) - Debe ser entre 0 y 100, sin decimales.
+- Monto (Decimal) - Solo lectura y calculado automaticamente
+
+5. El porcentaje debe ser entre 0 y 100.
+
+6. El monto debe ser el porcentaje sobre el monto total del presupuesto mensual.
+
+7. El total de los porcentajes debe ser 100.
+
+8. El total de los montos debe ser el monto total del presupuesto mensual.
+
+9. El sistema debe validar que el total de los porcentajes sea 100 y el total de los montos sea el monto total del presupuesto mensual. De lo contrario, no se debe permitir guardar el presupuesto mensual.    
+
+10. Las distribuciones se deben guardar al dar clic en guardar el presupuesto mensual. Si se edita un presupuesto mensual, se deben actualizar las distribuciones correspondientes. Si se elimina un presupuesto mensual, se deben eliminar las distribuciones correspondientes.
+11. Las categorias deben ser las siguientes para agregar a la base de datos:
+- Obligaciones
+- Gustos personales
+- Metas-Ahorro
+- Imprevistos
+- Otros 
+
+12. Mostrar la sesion para la distribucion del presupuesto al cargar el formulario. Para crear o editar, se debe mostrar una distribuccion por defecto para la categoria "Obligaciones" la cual no se puede cambiar en el combobox y solo se puede editar su valor. Por defecto debe asignarse 100 al porcentaje. A partir de ahi se puede crear distribucciones dinamicamente.
 
 
 

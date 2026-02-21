@@ -15,4 +15,6 @@ public class PresupuestoMensualDto
     public string? Concepto { get; set; }
     /// <summary>Saldo efectivo: Monto + Agregar - Quitar.</summary>
     public decimal SaldoActual { get; set; }
+
+    public List<DistribucionPresupuestoDto> Distribuciones { get; set; } = new();
 }

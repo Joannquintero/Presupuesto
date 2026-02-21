@@ -1,13 +1,15 @@
 @page "/presupuesto-mensual/editar/{Id:int}"
 @using Presupuesto.Application.DTOs
 @using Presupuesto.Application.Services
+@using Presupuesto.Domain.Entities
 @inject IPresupuestoMensualService PresupuestoService
+@inject ICategoriaPresupuestoService CategoriaService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <PageTitle>Editar Presupuesto - Control de Presupuesto</PageTitle>
 
-<div class="container py-4" style="max-width: 640px;">
+<div class="container py-4" style="max-width: 800px;">
     <div class="mb-4">
         <a href="/presupuesto-mensual" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Volver al listado
@@ -63,7 +65,7 @@
 
                         <!-- Monto -->
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Monto <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Monto Total <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
                                 <input type="text" class="form-control" inputmode="numeric"
@@ -87,6 +89,86 @@
                         </div>
                     </div>
 
+                    <!-- Sección de Distribución -->
+                    <div class="mt-4 p-3 border rounded bg-light">
+                        <h5 class="mb-3">Distribución del Presupuesto por Categoría</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 40%">Categoría</th>
+                                        <th style="width: 25%">Porcentaje (%)</th>
+                                        <th style="width: 25%">Monto Calculado</th>
+                                        <th style="width: 10%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var dist in dto.Distribuciones)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (dist.CategoriaNombre == "Obligaciones")
+                                                {
+                                                    <div class="form-control bg-light">@dist.CategoriaNombre</div>
+                                                }
+                                                else
+                                                {
+                                                    <select class="form-select" @bind="dist.CategoriaPresupuestoId">
+                                                        @foreach (var cat in categorias.Where(c => c.Nombre != "Obligaciones"))
+                                                        {
+                                                            <option value="@cat.Id">@cat.Nombre</option>
+                                                        }
+                                                    </select>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" 
+                                                           value="@((int)dist.Porcentaje)" 
+                                                           @oninput="(e) => OnPorcentajeInput(dist, e)"
+                                                           min="0" max="100" step="1" />
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="text" class="form-control bg-white" value="@dist.Monto.ToString("N0", new System.Globalization.CultureInfo("es-CL"))" readonly />
+                                                </div>
+                                            </td>
+                                            <td class="text-end">
+                                                @if (dist.CategoriaNombre != "Obligaciones")
+                                                {
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="() => RemoverDistribucion(dist)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="fw-bold @(TotalPorcentaje == 100 ? "table-success" : "table-warning")">
+                                        <td>TOTAL</td>
+                                        <td>@TotalPorcentaje %</td>
+                                        <td>$ @dto.Distribuciones.Sum(d => d.Monto).ToString("N0", new System.Globalization.CultureInfo("es-CL"))</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" @onclick="AgregarDistribucion">
+                            <i class="bi bi-plus-lg me-1"></i>Agregar Categoría
+                        </button>
+                        
+                        @if (TotalPorcentaje != 100)
+                        {
+                            <div class="text-danger small mt-2">
+                                <i class="bi bi-exclamation-circle me-1"></i>La suma de los porcentajes debe ser exactamente 100%. Actual: @TotalPorcentaje%
+                            </div>
+                        }
+                    </div>
+
                     @if (!string.IsNullOrEmpty(errorMessage))
                     {
                         <div class="alert alert-danger mt-3">
@@ -95,7 +177,7 @@
                     }
 
                     <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-warning" disabled="@saving">
+                        <button type="submit" class="btn btn-warning" disabled="@(saving || TotalPorcentaje != 100)">
                             @if (saving)
                             {
                                 <span class="spinner-border spinner-border-sm me-1"></span>
@@ -119,6 +201,7 @@
     public int Id { get; set; }
 
     private CreateUpdatePresupuestoMensualDto dto = new();
+    private List<CategoriaPresupuesto> categorias = new();
     private bool loading = true;
     private bool notFound = false;
     private bool saving = false;
@@ -132,9 +215,12 @@
     };
 
     private string montoTexto = string.Empty;
+    private decimal TotalPorcentaje => dto.Distribuciones.Sum(d => d.Porcentaje);
 
     protected override async Task OnInitializedAsync()
     {
+        categorias = await CategoriaService.GetAllAsync();
+        
         var existing = await PresupuestoService.GetByIdAsync(Id);
         if (existing is null)
         {
@@ -147,16 +233,83 @@
                 Anio = existing.Anio,
                 Mes = existing.Mes,
                 Monto = existing.Monto,
-                Concepto = existing.Concepto
+                Concepto = existing.Concepto,
+                Distribuciones = existing.Distribuciones.Select(d => new DistribucionPresupuestoDto
+                {
+                    Id = d.Id,
+                    CategoriaPresupuestoId = d.CategoriaPresupuestoId,
+                    CategoriaNombre = d.CategoriaNombre,
+                    Porcentaje = d.Porcentaje,
+                    Monto = d.Monto
+                }).ToList()
             };
-            // Inicializar el campo de monto con formato de miles
+            
+            // Si por alguna razón no tiene obligaciones (presupuestos antiguos), agregarlo
+            if (!dto.Distribuciones.Any(d => d.CategoriaNombre == "Obligaciones"))
+            {
+                 var obligacion = categorias.FirstOrDefault(c => c.Nombre == "Obligaciones");
+                 if (obligacion != null)
+                 {
+                     dto.Distribuciones.Insert(0, new DistribucionPresupuestoDto
+                     {
+                         CategoriaPresupuestoId = obligacion.Id,
+                         CategoriaNombre = obligacion.Nombre,
+                         Porcentaje = 0,
+                         Monto = 0
+                     });
+                 }
+            }
+
             montoTexto = ((long)existing.Monto).ToString("N0", new System.Globalization.CultureInfo("es-CL"));
         }
         loading = false;
     }
 
+    private void AgregarDistribucion()
+    {
+        var primeraNoObligacion = categorias.FirstOrDefault(c => c.Nombre != "Obligaciones");
+        if (primeraNoObligacion != null)
+        {
+            dto.Distribuciones.Add(new DistribucionPresupuestoDto
+            {
+                CategoriaPresupuestoId = primeraNoObligacion.Id,
+                CategoriaNombre = primeraNoObligacion.Nombre,
+                Porcentaje = 0,
+                Monto = 0
+            });
+        }
+    }
+
+    private void RemoverDistribucion(DistribucionPresupuestoDto dist)
+    {
+        dto.Distribuciones.Remove(dist);
+    }
+
+    private void OnPorcentajeInput(DistribucionPresupuestoDto dist, ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), out var val))
+        {
+            dist.Porcentaje = Math.Clamp(Math.Round(val, 0), 0, 100);
+            RecalcularMontos();
+        }
+    }
+
+    private void RecalcularMontos()
+    {
+        foreach (var dist in dto.Distribuciones)
+        {
+            dist.Monto = Math.Round(dto.Monto * (dist.Porcentaje / 100m), 2);
+        }
+    }
+
     private async Task Guardar()
     {
+        if (TotalPorcentaje != 100)
+        {
+            errorMessage = "La suma de porcentajes debe ser 100%";
+            return;
+        }
+
         saving = true;
         errorMessage = null;
         try
@@ -183,6 +336,7 @@
         {
             dto.Monto = 0;
             montoTexto = string.Empty;
+            RecalcularMontos();
             return;
         }
 
@@ -190,6 +344,7 @@
         {
             dto.Monto = valor;
             montoTexto = valor.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
+            RecalcularMontos();
         }
     }
 }

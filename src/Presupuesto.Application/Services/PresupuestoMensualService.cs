@@ -24,6 +24,8 @@ public class PresupuestoMensualService : IPresupuestoMensualService
     {
         var list = await _presupuestos
             .Include(p => p.Saldos)
+            .Include(p => p.Distribuciones)
+                .ThenInclude(d => d.CategoriaPresupuesto)
             .OrderByDescending(p => p.Anio)
             .ThenByDescending(p => p.Mes)
             .ToListAsync();
@@ -33,7 +35,11 @@ public class PresupuestoMensualService : IPresupuestoMensualService
 
     public async Task<List<PresupuestoMensualDto>> GetByFilterAsync(int? anio, int? mes, string? busqueda)
     {
-        var query = _presupuestos.Include(p => p.Saldos).AsQueryable();
+        var query = _presupuestos
+            .Include(p => p.Saldos)
+            .Include(p => p.Distribuciones)
+                .ThenInclude(d => d.CategoriaPresupuesto)
+            .AsQueryable();
 
         if (anio.HasValue)
             query = query.Where(p => p.Anio == anio.Value);
@@ -56,6 +62,8 @@ public class PresupuestoMensualService : IPresupuestoMensualService
     {
         var presupuesto = await _presupuestos
             .Include(p => p.Saldos)
+            .Include(p => p.Distribuciones)
+                .ThenInclude(d => d.CategoriaPresupuesto)
             .FirstOrDefaultAsync(p => p.Id == id);
         return presupuesto is null ? null : MapToDto(presupuesto);
     }
@@ -69,7 +77,13 @@ public class PresupuestoMensualService : IPresupuestoMensualService
             Monto = dto.Monto,
             Concepto = dto.Concepto,
             FechaInicio = new DateTime(dto.Anio, dto.Mes, 1),
-            FechaFin = new DateTime(dto.Anio, dto.Mes, 1).AddMonths(1).AddDays(-1)
+            FechaFin = new DateTime(dto.Anio, dto.Mes, 1).AddMonths(1).AddDays(-1),
+            Distribuciones = dto.Distribuciones.Select(d => new DistribucionPresupuesto
+            {
+                CategoriaPresupuestoId = d.CategoriaPresupuestoId,
+                Porcentaje = d.Porcentaje,
+                Monto = d.Monto
+            }).ToList()
         };
 
         _presupuestos.Add(presupuesto);
@@ -80,7 +94,10 @@ public class PresupuestoMensualService : IPresupuestoMensualService
 
     public async Task<PresupuestoMensualDto?> UpdateAsync(int id, CreateUpdatePresupuestoMensualDto dto)
     {
-        var presupuesto = await _presupuestos.FindAsync(id);
+        var presupuesto = await _presupuestos
+            .Include(p => p.Distribuciones)
+            .FirstOrDefaultAsync(p => p.Id == id);
+            
         if (presupuesto is null) return null;
 
         presupuesto.Anio = dto.Anio;
@@ -89,6 +106,18 @@ public class PresupuestoMensualService : IPresupuestoMensualService
         presupuesto.Concepto = dto.Concepto;
         presupuesto.FechaInicio = new DateTime(dto.Anio, dto.Mes, 1);
         presupuesto.FechaFin = new DateTime(dto.Anio, dto.Mes, 1).AddMonths(1).AddDays(-1);
+
+        // Actualizar distribuciones
+        presupuesto.Distribuciones.Clear();
+        foreach (var d in dto.Distribuciones)
+        {
+            presupuesto.Distribuciones.Add(new DistribucionPresupuesto
+            {
+                CategoriaPresupuestoId = d.CategoriaPresupuestoId,
+                Porcentaje = d.Porcentaje,
+                Monto = d.Monto
+            });
+        }
 
         await _context.SaveChangesAsync();
         return MapToDto(presupuesto);
@@ -116,7 +145,15 @@ public class PresupuestoMensualService : IPresupuestoMensualService
             Mes         = p.Mes,
             Monto       = p.Monto,
             Concepto    = p.Concepto,
-            SaldoActual = p.Monto + agregar - quitar
+            SaldoActual = p.Monto + agregar - quitar,
+            Distribuciones = p.Distribuciones.Select(d => new DistribucionPresupuestoDto
+            {
+                Id = d.Id,
+                CategoriaPresupuestoId = d.CategoriaPresupuestoId,
+                CategoriaNombre = d.CategoriaPresupuesto?.Nombre ?? string.Empty,
+                Porcentaje = d.Porcentaje,
+                Monto = d.Monto
+            }).ToList()
         };
     }
 }

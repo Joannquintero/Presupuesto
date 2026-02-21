@@ -16,10 +16,37 @@ public class PresupuestoDbContext : DbContext
     public DbSet<Gasto> Gastos => Set<Gasto>();
     public DbSet<PresupuestoMensual> PresupuestosMensuales => Set<PresupuestoMensual>();
     public DbSet<SaldoPresupuesto> SaldosPresupuesto => Set<SaldoPresupuesto>();
+    public DbSet<CategoriaPresupuesto> CategoriasPresupuesto => Set<CategoriaPresupuesto>();
+    public DbSet<DistribucionPresupuesto> DistribucionesPresupuesto => Set<DistribucionPresupuesto>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Configuración de la entidad CategoriaPresupuesto
+        modelBuilder.Entity<CategoriaPresupuesto>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nombre).HasMaxLength(100).IsRequired();
+        });
+
+        // Configuración de la entidad DistribucionPresupuesto
+        modelBuilder.Entity<DistribucionPresupuesto>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Porcentaje).HasPrecision(5, 2);
+            entity.Property(e => e.Monto).HasPrecision(18, 2);
+
+            entity.HasOne(e => e.PresupuestoMensual)
+                  .WithMany(p => p.Distribuciones)
+                  .HasForeignKey(e => e.PresupuestoMensualId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.CategoriaPresupuesto)
+                  .WithMany()
+                  .HasForeignKey(e => e.CategoriaPresupuestoId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
 
         // Configuración de la entidad Gasto
         modelBuilder.Entity<Gasto>(entity =>
@@ -57,6 +84,15 @@ public class PresupuestoDbContext : DbContext
 
     private static void SeedData(ModelBuilder modelBuilder)
     {
+        // Seed Categorías Presupuesto
+        modelBuilder.Entity<CategoriaPresupuesto>().HasData(
+            new CategoriaPresupuesto { Id = 1, Nombre = "Obligaciones" },
+            new CategoriaPresupuesto { Id = 2, Nombre = "Gustos personales" },
+            new CategoriaPresupuesto { Id = 3, Nombre = "Metas-Ahorro" },
+            new CategoriaPresupuesto { Id = 4, Nombre = "Imprevistos" },
+            new CategoriaPresupuesto { Id = 5, Nombre = "Otros" }
+        );
+
         var hoy = DateTime.Today;
         var mesActual = new DateTime(hoy.Year, hoy.Month, 1);
         var mesAnterior = mesActual.AddMonths(-1);

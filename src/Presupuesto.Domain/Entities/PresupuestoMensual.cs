@@ -39,4 +39,5 @@ public class PresupuestoMensual
 
     // Navegación
     public ICollection<SaldoPresupuesto> Saldos { get; set; } = new List<SaldoPresupuesto>();
+    public ICollection<DistribucionPresupuesto> Distribuciones { get; set; } = new List<DistribucionPresupuesto>();
 }

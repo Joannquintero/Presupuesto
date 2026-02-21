@@ -21,4 +21,6 @@ public class CreateUpdatePresupuestoMensualDto
 
     [StringLength(200, ErrorMessage = "El concepto no puede superar los 200 caracteres")]
     public string? Concepto { get; set; }
+
+    public List<DistribucionPresupuestoDto> Distribuciones { get; set; } = new();
 }
