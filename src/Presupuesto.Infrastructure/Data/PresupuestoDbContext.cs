@@ -52,7 +52,7 @@ public class PresupuestoDbContext : DbContext
         modelBuilder.Entity<Gasto>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Descripcion).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Descripcion).HasMaxLength(200).IsRequired(false);
             entity.Property(e => e.Monto).HasPrecision(18, 2);
             entity.Property(e => e.SubCategoria).HasConversion<int>().IsRequired(false);
             

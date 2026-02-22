@@ -17,9 +17,8 @@ public class CreateUpdateGastoDto
 
     public Categoria? SubCategoria { get; set; }
 
-    [Required(ErrorMessage = "La descripción es obligatoria")]
-    [StringLength(200, MinimumLength = 3, ErrorMessage = "La descripción debe tener entre 3 y 200 caracteres")]
-    public string Descripcion { get; set; } = string.Empty;
+    [StringLength(200, ErrorMessage = "La descripción no puede exceder los 200 caracteres")]
+    public string? Descripcion { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El monto es obligatorio")]
     [Range(0.01, 999999999.99, ErrorMessage = "El monto debe ser mayor a 0")]
