@@ -10,6 +10,8 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
 [Ll]og/
 [Ll]ogs/
 
@@ -395,11 +397,7 @@ temp/
 *.userosscache
 *.sln.docstates
 
-# Build Results
-[Bb]in/
-[Oo]bj/
-**/[Bb]in/
-**/[Oo]bj/
+
 
 # DLLs and Executables
 *.dll
