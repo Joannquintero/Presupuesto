@@ -1,0 +1,93 @@
+@page "/perfil"
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Perfil de Usuario - Control de Gastos</PageTitle>
+
+<div class="perfil-container container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h2 class="text-center fw-bold">Mi Perfil</h2>
+                    <p class="text-muted text-center">Gestiona tu información personal y avatar</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="avatar-preview-circle mx-auto mb-3">
+                            <span>JQ</span>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <i class="bi bi-camera me-1"></i> Cambiar Foto
+                        </button>
+                    </div>
+
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Nombre</label>
+                                <input type="text" class="form-control rounded-3" value="Joann" disabled />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Apellido</label>
+                                <input type="text" class="form-control rounded-3" value="Quintero" disabled />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Correo Electrónico</label>
+                                <input type="email" class="form-control rounded-3" value="joann.quintero@example.com" disabled />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Rol</label>
+                                <input type="text" class="form-control rounded-3" value="Administrador" disabled />
+                            </div>
+                        </div>
+                        
+                        <div class="mt-5 d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/" class="btn btn-light rounded-pill px-4">Volver</a>
+                            <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" @onclick="ShowNotImplemented">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void ShowNotImplemented()
+    {
+        // Solo demostrativo por ahora
+    }
+}
+
+<style>
+    .perfil-container {
+        max-width: 900px;
+    }
+
+    .avatar-preview-circle {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #052767 0%, #3a0647 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 3rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .card {
+        transition: transform 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(5px);
+    }
+
+    .form-control:disabled {
+        background-color: #fcfcfc;
+        border: 1px solid #eee;
+    }
+</style>
