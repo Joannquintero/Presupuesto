@@ -100,7 +100,7 @@ src/
 10. Incluir duracion de la implementacion.
 11. Para las implementaciones tener en cuenta el modelo de capas (Services, Repositories, Models, etc).
 12. Para la logica de negocio, tener en cuenta el modelo entity framework existente.
-13. En los comentarios del código, usar español.
+13. No comentar código, el código debe ser autoexplicativo. En caso de ser necesario, incluir comentarios XML (`<summary>`) para explicar la funcionalidad de métodos o clases complejas.
 14. Despues de la implementacion, incluir resumen de cambios implementados.
 16. Generar Código Limpio.  
 

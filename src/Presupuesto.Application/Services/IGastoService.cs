@@ -16,4 +16,5 @@ public interface IGastoService
     Task<bool> DeleteAsync(int id);
     Task<ResumenMensualDto> GetResumenMensualAsync(int anio, int mes);
     Task<decimal> GetTotalMesAsync(int anio, int mes);
+    Task<decimal?> GetDisponibleCategoriaAsync(int anio, int mes, int categoriaId, int? excludeGastoId = null);
 }

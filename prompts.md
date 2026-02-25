@@ -105,3 +105,12 @@ Estas opciones se deben guardar en la base de datos como categorias de obligacio
 5. Si se selecciona una categoria diferente a "Obligaciones", se debe ocultar el combo box de categorias de obligaciones
 
 6. El campo "Monto" debe tener un formato de moneda y solo debe abrir el teclado numerico en dispositivos moviles al editarlo.  
+
+--
+
+Al crear o editar un gasto, realizar los siguientes ajustes:
+
+1. Se debe validar que exista un presupuesto mensual para el mismo año y mes de acuerdo a la fecha del gasto . Si no existe, se debe mostrar un mensaje de error y no se debe permitir guardar el gasto.  
+2. Se debe validar que el monto del gasto no exceda el monto disponible en el presupuesto mensual para la categoria correspondiente. Si excede, se debe mostrar un mensaje de error y no se debe permitir guardar el gasto.  
+3. Incluir plan step by step para todas las implementaciones.
+4. Se debe mostrar el monto disponible en el presupuesto mensual para la categoria correspondiente al crear o editar un gasto de acuerdo a la fecha del gasto y la categoria seleccionada.  

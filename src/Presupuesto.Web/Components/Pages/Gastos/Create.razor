@@ -26,7 +26,7 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Fecha</label>
-                            <InputDate class="form-control" @bind-Value="gasto.Fecha" />
+                            <InputDate class="form-control" @bind-Value="gasto.Fecha" @bind-Value:after="ActualizarDisponible" />
                             <ValidationMessage For="() => gasto.Fecha" class="text-danger small" />
                         </div>
 
@@ -56,6 +56,31 @@
                                         }
                                     </InputSelect>
                                     <ValidationMessage For="() => gasto.SubCategoria" class="text-danger small" />
+                                </div>
+                            }
+                            @if (gasto.CategoriaPresupuestoId > 0)
+                            {
+                                <div class="mt-2 p-2 rounded bg-light border-start border-4 @(montoDisponible.HasValue ? (montoDisponible <= 0 ? "border-danger" : "border-info") : "border-warning") animate__animated animate__fadeIn">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small">Disponible en categoría:</span>
+                                        @if (consultandoDisponible)
+                                        {
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-bold @(montoDisponible.HasValue ? (montoDisponible <= 0 ? "text-danger" : "text-primary") : "text-warning")">
+                                                @(montoDisponible.HasValue ? montoDisponible.Value.ToString("C0") : "Sin presupuesto asignado")
+                                            </span>
+                                        }
+                                    </div>
+                                    @if (!consultandoDisponible && !montoDisponible.HasValue)
+                                    {
+                                        <div class="text-warning mt-1" style="font-size: 0.75rem;">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                            Para este mes/año no existe o no tiene fondos para esta categoría.
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
@@ -152,7 +177,11 @@
     protected override async Task OnInitializedAsync()
     {
         categoriasPresupuesto = await CategoriaPresupuestoService.GetAllAsync();
+        await ActualizarDisponible();
     }
+
+    private decimal? montoDisponible;
+    private bool consultandoDisponible = false;
 
     private void OnCategoriaChanged(int id)
     {
@@ -160,6 +189,35 @@
         if (!categoriaEsObligaciones)
         {
             gasto.SubCategoria = null;
+        }
+        _ = ActualizarDisponible();
+    }
+
+    private async Task ActualizarDisponible()
+    {
+        if (gasto.CategoriaPresupuestoId > 0)
+        {
+            try
+            {
+                consultandoDisponible = true;
+                StateHasChanged();
+                montoDisponible = await GastoService.GetDisponibleCategoriaAsync(gasto.Fecha.Year, gasto.Fecha.Month, gasto.CategoriaPresupuestoId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al consultar disponibilidad: {ex.Message}");
+                montoDisponible = null;
+                errorMessage = $"Error técnico al consultar presupuesto: {ex.Message}";
+            }
+            finally
+            {
+                consultandoDisponible = false;
+                StateHasChanged();
+            }
+        }
+        else
+        {
+            montoDisponible = null;
         }
     }
 
