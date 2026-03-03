@@ -270,6 +270,23 @@
             </div>
         </div>
 
+        <!-- Gráfica: Línea - Evolución Mensual del Gasto Total -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up text-success me-2"></i>Evolución Mensual de Gastos
+                        </h5>
+                        <span class="badge bg-secondary bg-opacity-10 text-dark fw-semibold">Últimos 6 meses</span>
+                    </div>
+                    <div class="card-body chart-line-wrapper">
+                        <canvas id="chartLineEvolucion"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Gráfica: Barras Apiladas - Categorías en el Tiempo -->
         <div class="row mt-4">
             <div class="col-12">
@@ -304,9 +321,10 @@
     private int selectedMes = DateTime.Now.Month;
     private bool chartsRendered = false;
 
-    // Evolución mensual (Stacked)
+    // Evolución mensual (Stacked y Línea)
     private List<string> evolLabels = new();
     private List<object> evolDatasets = new();
+    private List<double> lineData = new();
 
     private readonly Dictionary<int, string> meses = new()
     {
@@ -330,6 +348,8 @@
                 await RenderHorizontalBarChart();
             if (evolLabels.Any() && evolDatasets.Any())
                 await JS.InvokeVoidAsync("renderStackedBarChart", "chartStackedEvolucion", evolLabels.ToArray(), evolDatasets.ToArray());
+            if (evolLabels.Any() && lineData.Any())
+                await JS.InvokeVoidAsync("renderLineChart", "chartLineEvolucion", evolLabels.ToArray(), lineData.ToArray());
         }
     }
 
@@ -345,9 +365,10 @@
             var presupuestos = await PresupuestoService.GetByFilterAsync(selectedAnio, selectedMes, null);
             presupuestoMensual = presupuestos.FirstOrDefault();
 
-            // Cargar Evolución últimos 6 meses (Barras Apiladas)
+            // Cargar Evolución últimos 6 meses (Barras Apiladas y Línea)
             evolLabels.Clear();
             evolDatasets.Clear();
+            lineData.Clear();
             
             var currentDate = new DateTime(selectedAnio, selectedMes, 1);
             var last6MonthsResumen = new List<ResumenMensualDto>();
@@ -361,6 +382,7 @@
                 
                 var r = await GastoService.GetResumenMensualAsync(targetDate.Year, targetDate.Month);
                 last6MonthsResumen.Add(r);
+                lineData.Add((double)r.TotalMes);
             }
             
             // Extraer todas las categorías únicas usadas en estos 6 meses
@@ -553,9 +575,10 @@
         border-color: #c8e6c9;
     }
 
-    /* ===== Horizontal & Stacked Bar Charts ===== */
+    /* ===== Charts wrappers ===== */
     .chart-hbar-wrapper,
-    .chart-stacked-wrapper {
+    .chart-stacked-wrapper,
+    .chart-line-wrapper {
         position: relative;
         height: 380px;
     }
