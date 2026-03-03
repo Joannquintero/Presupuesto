@@ -337,6 +337,72 @@
                 }
             });
         };
+
+        // ── Gráfica: Gauge (Medidor de % de Presupuesto) ──
+        let gaugeChartInstance = null;
+        window.renderGaugeChart = (canvasId, percentage) => {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            
+            if (gaugeChartInstance) {
+                gaugeChartInstance.destroy();
+            }
+
+            const clamped = Math.min(Math.max(percentage, 0), 100);
+            let gaugeColor = percentage > 100 ? '#dc3545' : percentage > 80 ? '#ffc107' : '#198754';
+
+            gaugeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Utilizado', 'Disponible'],
+                    datasets: [{
+                        data: [percentage, Math.max(0, 100 - percentage)],
+                        backgroundColor: [gaugeColor, '#e9ecef'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    animation: { duration: 1000, easing: 'easeOutBounce' }
+                },
+                plugins: [{
+                    id: 'gaugeText',
+                    beforeDraw: function(chart) {
+                        const width = chart.width;
+                        const height = chart.height;
+                        const ctx = chart.ctx;
+                        ctx.restore();
+                        
+                        const fontSize = (height / 80).toFixed(2);
+                        ctx.font = `bold ${fontSize}em sans-serif`;
+                        ctx.textBaseline = "bottom";
+                        
+                        let displayPct = percentage.toFixed(1) + "%";
+                        let textX = Math.round((width - ctx.measureText(displayPct).width) / 2);
+                        let textY = height - 5;
+                        
+                        ctx.fillStyle = gaugeColor;
+                        ctx.fillText(displayPct, textX, textY);
+                        
+                        ctx.font = `600 ${(height / 180).toFixed(2)}em sans-serif`;
+                        ctx.fillStyle = '#6c757d';
+                        ctx.textBaseline = "top";
+                        let subText = "del presupuesto";
+                        let subX = Math.round((width - ctx.measureText(subText).width) / 2);
+                        ctx.fillText(subText, subX, textY + 5);
+                        ctx.save();
+                    }
+                }]
+            });
+        };
     </script>
 </body>
 
