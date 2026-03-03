@@ -180,6 +180,99 @@
                 }
             });
         };
+        // ── Gráfica: Barras Apiladas (Categorías histórico) ──
+        let stackedChartInstance = null;
+        window.renderStackedBarChart = (canvasId, labels, rawDatasets) => {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            
+            if (stackedChartInstance) {
+                stackedChartInstance.destroy();
+            }
+
+            // Mapearemos los colores para que cada categoría tenga un color consistente.
+            // Usamos una paleta fresca y extensa de colores vibrantes y modernos.
+            const generateColor = (seedName) => {
+                const colors = [
+                    '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236', 
+                    '#166a8f', '#00a950', '#58595b', '#8549ba', '#ffb300',
+                    '#c51162', '#3f51b5', '#4caf50', '#009688', '#e91e63'
+                ];
+                let hash = 0;
+                for (let i = 0; i < seedName.length; i++) {
+                    hash = seedName.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const index = Math.abs(hash % colors.length);
+                return colors[index];
+            };
+
+            const chartJsDatasets = rawDatasets.map(d => ({
+                label: d.label,
+                data: d.data,
+                backgroundColor: generateColor(d.label),
+                borderWidth: 1,
+                borderRadius: 4,
+                borderColor: 'rgba(255,255,255, 0.5)'
+            }));
+
+            stackedChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: chartJsDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12 },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw;
+                                    if(val === 0) return null; // Omitir tools en ceros para apilados
+                                    return ` ${context.dataset.label}: $${val.toLocaleString('es-CO')}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: { font: { size: 12, weight: '600' } }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                font: { size: 11 },
+                                color: '#6c757d',
+                                callback: function(value) {
+                                    if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
+                                    if (value >= 1000)    return '$' + (value / 1000).toFixed(0) + 'k';
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 800
+                    }
+                }
+            });
+        };
     </script>
 </body>
 

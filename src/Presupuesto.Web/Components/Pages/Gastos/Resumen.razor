@@ -269,6 +269,23 @@
                 </div>
             </div>
         </div>
+
+        <!-- Gráfica: Barras Apiladas - Categorías en el Tiempo -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart-steps me-2 text-primary"></i>Categorías en el Tiempo
+                        </h5>
+                        <span class="badge bg-secondary bg-opacity-10 text-dark fw-semibold">Últimos 6 meses</span>
+                    </div>
+                    <div class="card-body chart-stacked-wrapper">
+                        <canvas id="chartStackedEvolucion"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     }
     else
     {
@@ -286,6 +303,10 @@
     private int selectedAnio = DateTime.Now.Year;
     private int selectedMes = DateTime.Now.Month;
     private bool chartsRendered = false;
+
+    // Evolución mensual (Stacked)
+    private List<string> evolLabels = new();
+    private List<object> evolDatasets = new();
 
     private readonly Dictionary<int, string> meses = new()
     {
@@ -307,6 +328,8 @@
             await RenderChart();
             if (presupuestoMensual is not null)
                 await RenderHorizontalBarChart();
+            if (evolLabels.Any() && evolDatasets.Any())
+                await JS.InvokeVoidAsync("renderStackedBarChart", "chartStackedEvolucion", evolLabels.ToArray(), evolDatasets.ToArray());
         }
     }
 
@@ -321,6 +344,49 @@
             // Cargar el presupuesto del período seleccionado
             var presupuestos = await PresupuestoService.GetByFilterAsync(selectedAnio, selectedMes, null);
             presupuestoMensual = presupuestos.FirstOrDefault();
+
+            // Cargar Evolución últimos 6 meses (Barras Apiladas)
+            evolLabels.Clear();
+            evolDatasets.Clear();
+            
+            var currentDate = new DateTime(selectedAnio, selectedMes, 1);
+            var last6MonthsResumen = new List<ResumenMensualDto>();
+            
+            // Recolectar datos de los 6 meses
+            for (int i = 5; i >= 0; i--)
+            {
+                var targetDate = currentDate.AddMonths(-i);
+                var shortMonth = meses[targetDate.Month].Substring(0, 3);
+                evolLabels.Add($"{shortMonth} {targetDate.Year}");
+                
+                var r = await GastoService.GetResumenMensualAsync(targetDate.Year, targetDate.Month);
+                last6MonthsResumen.Add(r);
+            }
+            
+            // Extraer todas las categorías únicas usadas en estos 6 meses
+            var todasCategorias = last6MonthsResumen
+                .SelectMany(r => r.GastosPorCategoria.Select(g => g.CategoriaNombre))
+                .Distinct()
+                .ToList();
+
+            // Colores por índice (ampliado en app.razor, pero mandaremos fallback desde aquí si es necesario).
+            // Construiremos el objeto para ChartJs.
+            foreach (var catName in todasCategorias)
+            {
+                var montosMensuales = new List<double>();
+                
+                foreach (var rMensual in last6MonthsResumen)
+                {
+                    var recordCat = rMensual.GastosPorCategoria.FirstOrDefault(x => x.CategoriaNombre == catName);
+                    montosMensuales.Add(recordCat is not null ? (double)recordCat.Total : 0.0);
+                }
+                
+                // Objeto anónimo para el runtime JS.
+                evolDatasets.Add(new {
+                    label = catName,
+                    data = montosMensuales.ToArray()
+                });
+            }
         }
         catch (Exception ex)
         {
@@ -487,10 +553,11 @@
         border-color: #c8e6c9;
     }
 
-    /* ===== Horizontal Bar Chart ===== */
-    .chart-hbar-wrapper {
+    /* ===== Horizontal & Stacked Bar Charts ===== */
+    .chart-hbar-wrapper,
+    .chart-stacked-wrapper {
         position: relative;
-        height: 280px;
+        height: 380px;
     }
 
     .text-indigo { color: #6366f1; }
