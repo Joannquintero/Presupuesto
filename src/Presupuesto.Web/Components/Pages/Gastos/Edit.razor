@@ -65,7 +65,7 @@
                                 @if (categoriaEsObligaciones)
                                 {
                                     <div class="mt-2 animate__animated animate__fadeIn">
-                                        <label class="form-label small text-muted">Tipo de Obligación</label>
+                                        <label class="form-label small text-muted">Tipo de Obligación <span class="fw-normal fs-small">(Opcional)</span></label>
                                         <InputSelect class="form-select" @bind-Value="gasto.SubCategoria">
                                             <option value="">Seleccione</option>
                                             @foreach (Categoria sub in Enum.GetValues<Categoria>())
@@ -310,11 +310,6 @@
             return;
         }
 
-        if (categoriaEsObligaciones && !gasto.SubCategoria.HasValue)
-        {
-            errorMessage = "Debe seleccionar el tipo de obligación.";
-            return;
-        }
 
         saving = true;
         errorMessage = null;
