@@ -3,6 +3,7 @@
 @using Presupuesto.Application.Services
 @using Presupuesto.Domain.Enums
 @inject IGastoService GastoService
+@inject IPresupuestoMensualService PresupuestoService
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
@@ -202,6 +203,72 @@
                 </div>
             </div>
         </div>
+
+        <!-- Gráfica: Presupuesto vs Gasto Real -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart-steps me-2 text-indigo"></i>Presupuesto vs Gasto Real
+                        </h5>
+                        <span class="badge bg-secondary bg-opacity-10 text-dark fw-semibold">
+                            @resumen.MesNombre @resumen.Anio
+                        </span>
+                    </div>
+                    @if (presupuestoMensual is null)
+                    {
+                        <div class="card-body">
+                            <div class="alert alert-warning mb-0">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                No hay presupuesto configurado para este período.
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-body chart-hbar-wrapper">
+                            <canvas id="chartHBarras"></canvas>
+                        </div>
+                        <!-- Mini tabla de estado por categoría -->
+                        <div class="card-footer bg-transparent px-4 pb-3 pt-2">
+                            <div class="row g-2">
+                                @foreach (var dist in presupuestoMensual.Distribuciones)
+                                {
+                                    var gastoReal = resumen.GastosPorCategoria
+                                        .FirstOrDefault(g => g.CategoriaPresupuestoId == dist.CategoriaPresupuestoId);
+                                    var gastado = gastoReal?.Total ?? 0m;
+                                    var pct = dist.Monto > 0 ? (Math.Round(gastado / dist.Monto * 100, 1)) : 0m;
+                                    var pctWidth = Math.Min(pct, 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+                                    
+                                    string modifier = pct > 100 ? "danger" : pct > 80 ? "warning" : "ok";
+                                    string cardClass = "status-card status-" + modifier;
+                                    string fillClass = "status-bar-fill status-" + modifier;
+                                    string iconBase = pct > 100 ? "bi-exclamation-triangle-fill" : pct > 80 ? "bi-exclamation-circle-fill" : "bi-check-circle-fill";
+                                    string iconClass = "bi " + iconBase;
+
+                                    <div class="col-md-6 col-lg-3">
+                                        <div class="@cardClass">
+                                            <div class="status-card-header">
+                                                <span class="fw-semibold small">@dist.CategoriaNombre</span>
+                                                <i class="@iconClass"></i>
+                                            </div>
+                                            <div class="status-bar-track">
+                                                <div class="@fillClass" style="width: @(pctWidth)%"></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <span class="small text-muted">@gastado.ToString("C0")</span>
+                                                <span class="small fw-semibold">@pct.ToString("F0")% de @dist.Monto.ToString("C0")</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     }
     else
     {
@@ -214,9 +281,11 @@
 
 @code {
     private ResumenMensualDto? resumen;
+    private PresupuestoMensualDto? presupuestoMensual;
     private bool loading = true;
     private int selectedAnio = DateTime.Now.Year;
     private int selectedMes = DateTime.Now.Month;
+    private bool chartsRendered = false;
 
     private readonly Dictionary<int, string> meses = new()
     {
@@ -232,18 +301,26 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (resumen is not null && resumen.GastosPorCategoria.Any())
+        if (resumen is not null && resumen.GastosPorCategoria.Any() && !chartsRendered)
         {
+            chartsRendered = true;
             await RenderChart();
+            if (presupuestoMensual is not null)
+                await RenderHorizontalBarChart();
         }
     }
 
     private async Task CargarResumen()
     {
         loading = true;
+        chartsRendered = false;
         try
         {
             resumen = await GastoService.GetResumenMensualAsync(selectedAnio, selectedMes);
+
+            // Cargar el presupuesto del período seleccionado
+            var presupuestos = await PresupuestoService.GetByFilterAsync(selectedAnio, selectedMes, null);
+            presupuestoMensual = presupuestos.FirstOrDefault();
         }
         catch (Exception ex)
         {
@@ -264,6 +341,24 @@
         var colors = resumen.GastosPorCategoria.Select(g => GetCategoriaColor(g.CategoriaNombre)).ToArray();
 
         await JS.InvokeVoidAsync("renderPieChart", "chartCategorias", labels, data, colors);
+    }
+
+    private async Task RenderHorizontalBarChart()
+    {
+        if (resumen is null || presupuestoMensual is null) return;
+
+        // Alinear datos: una entrada por distribución del presupuesto
+        var distribuciones = presupuestoMensual.Distribuciones;
+        var labels     = distribuciones.Select(d => d.CategoriaNombre).ToArray();
+        var budget     = distribuciones.Select(d => (double)d.Monto).ToArray();
+        var spent      = distribuciones.Select(d =>
+        {
+            var g = resumen.GastosPorCategoria.FirstOrDefault(x => x.CategoriaPresupuestoId == d.CategoriaPresupuestoId);
+            return g is null ? 0.0 : (double)g.Total;
+        }).ToArray();
+        var colors     = distribuciones.Select(d => GetCategoriaColor(d.CategoriaNombre)).ToArray();
+
+        await JS.InvokeVoidAsync("renderHorizontalBarChart", "chartHBarras", labels, budget, spent, colors);
     }
 
     private string GetCategoriaBadgeClass(string nombre) => nombre switch
@@ -391,5 +486,57 @@
         background: #e8f5e9;
         border-color: #c8e6c9;
     }
+
+    /* ===== Horizontal Bar Chart ===== */
+    .chart-hbar-wrapper {
+        position: relative;
+        height: 280px;
+    }
+
+    .text-indigo { color: #6366f1; }
+
+    /* ===== Status Cards ===== */
+    .status-card {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        background: #f8f9fa;
+    }
+
+    .status-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .status-bar-track {
+        height: 6px;
+        background: #dee2e6;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 4px;
+    }
+
+    .status-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.6s ease;
+    }
+
+    /* OK: verde, uso menor a 80% */
+    .status-ok { border-color: #c8e6c9; }
+    .status-ok .status-bar-fill { background: #198754; }
+    .status-ok .bi { color: #198754; }
+
+    /* Warning: amarillo, uso 80-100% */
+    .status-warning { border-color: #fff3cd; }
+    .status-warning .status-bar-fill { background: #fd7e14; }
+    .status-warning .bi { color: #fd7e14; }
+
+    /* Danger: rojo, uso mayor a 100% */
+    .status-danger { border-color: #f5c2c7; }
+    .status-danger .status-bar-fill { background: #dc3545; }
+    .status-danger .bi { color: #dc3545; }
 </style>
 

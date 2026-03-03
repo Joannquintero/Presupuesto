@@ -29,12 +29,12 @@
     <!-- Custom Chart Script -->
     <script>
         let chartInstance = null;
+        let hBarChartInstance = null;
         
         window.renderPieChart = (canvasId, labels, data, colors) => {
             const ctx = document.getElementById(canvasId);
             if (!ctx) return;
             
-            // Destruir chart anterior si existe
             if (chartInstance) {
                 chartInstance.destroy();
             }
@@ -73,6 +73,109 @@
                                 }
                             }
                         }
+                    }
+                }
+            });
+        };
+
+        window.renderHorizontalBarChart = (canvasId, labels, presupuestado, gastado, colors) => {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+
+            if (hBarChartInstance) {
+                hBarChartInstance.destroy();
+            }
+
+            hBarChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Presupuestado',
+                            data: presupuestado,
+                            backgroundColor: 'rgba(99, 102, 241, 0.18)',
+                            borderColor: 'rgba(99, 102, 241, 0.8)',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            borderSkipped: false,
+                        },
+                        {
+                            label: 'Gastado',
+                            data: gastado,
+                            backgroundColor: colors.map(c => c + 'CC'),
+                            borderColor: colors,
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            borderSkipped: false,
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 16,
+                                font: { size: 12, weight: '600' },
+                                usePointStyle: true,
+                                pointStyle: 'rectRounded'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const datasetIndex = context.datasetIndex;
+                                    const categoryIndex = context.dataIndex;
+                                    const budget = presupuestado[categoryIndex];
+                                    const spent  = gastado[categoryIndex];
+                                    const pct = budget > 0 ? ((spent / budget) * 100).toFixed(1) : '0.0';
+                                    const formatted = '$' + value.toLocaleString('es-CO');
+                                    if (datasetIndex === 0) {
+                                        return `  Presupuestado: ${formatted}`;
+                                    } else {
+                                        const emoji = parseFloat(pct) > 100 ? '⚠️' : parseFloat(pct) > 80 ? '🟡' : '✅';
+                                        return [
+                                            `  Gastado: ${formatted}`,
+                                            `  ${emoji} ${pct}% del presupuesto`
+                                        ];
+                                    }
+                                }
+                            },
+                            padding: 12,
+                            titleFont: { size: 13, weight: '700' },
+                            bodyFont: { size: 12 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                font: { size: 11 },
+                                color: '#6c757d',
+                                callback: function(value) {
+                                    if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
+                                    if (value >= 1000)    return '$' + (value / 1000).toFixed(0) + 'k';
+                                    return '$' + value;
+                                }
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 12, weight: '600' },
+                                color: '#495057'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 700,
+                        easing: 'easeOutQuart'
                     }
                 }
             });
