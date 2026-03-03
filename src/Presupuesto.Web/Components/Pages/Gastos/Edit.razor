@@ -54,7 +54,7 @@
                                              ValueExpression="@(() => gasto.CategoriaPresupuestoId)"
                                              Value="@gasto.CategoriaPresupuestoId"
                                              ValueChanged="@((int val) => OnCategoriaChanged(val))">
-                                    <option value="0">-- Seleccione Categoría --</option>
+                                    <option value="0">Seleccione</option>
                                     @foreach (var cat in categoriasPresupuesto)
                                     {
                                         <option value="@cat.Id">@cat.Nombre</option>
@@ -67,7 +67,7 @@
                                     <div class="mt-2 animate__animated animate__fadeIn">
                                         <label class="form-label small text-muted">Tipo de Obligación</label>
                                         <InputSelect class="form-select" @bind-Value="gasto.SubCategoria">
-                                            <option value="">-- Seleccione Tipo --</option>
+                                            <option value="">Seleccione</option>
                                             @foreach (Categoria sub in Enum.GetValues<Categoria>())
                                             {
                                                 <option value="@sub">@sub.ToString()</option>
