@@ -97,27 +97,5 @@ public class PresupuestoDbContext : DbContext
             new CategoriaPresupuesto { Id = 4, Nombre = "Fondo de Apoyo", EsSistema = false },
             new CategoriaPresupuesto { Id = 5, Nombre = "Otros", EsSistema = false }
         );
-
-        var hoy = DateTime.Today;
-        var mesActual = new DateTime(hoy.Year, hoy.Month, 1);
-        var mesAnterior = mesActual.AddMonths(-1);
-
-        modelBuilder.Entity<Gasto>().HasData(
-            // Gastos del mes actual - Usando CategoriaPresupuestoId 1 (Obligaciones)
-            new Gasto { Id = 1, Fecha = mesActual.AddDays(1), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Alimentacion, Descripcion = "Supermercado semanal", Monto = 150.50m },
-            new Gasto { Id = 2, Fecha = mesActual.AddDays(3), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Transporte, Descripcion = "Gasolina", Monto = 80.00m },
-            new Gasto { Id = 3, Fecha = mesActual.AddDays(5), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Servicios, Descripcion = "Factura de luz", Monto = 65.30m },
-            new Gasto { Id = 4, Fecha = mesActual.AddDays(7), CategoriaPresupuestoId = 2, SubCategoria = null, Descripcion = "Cine y cena", Monto = 45.00m },
-            new Gasto { Id = 5, Fecha = mesActual.AddDays(10), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Alimentacion, Descripcion = "Restaurante", Monto = 32.50m },
-            new Gasto { Id = 6, Fecha = mesActual.AddDays(12), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Servicios, Descripcion = "Internet", Monto = 55.00m },
-            new Gasto { Id = 7, Fecha = mesActual.AddDays(15), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Otros, Descripcion = "Medicinas", Monto = 28.75m },
-            
-            // Gastos del mes anterior
-            new Gasto { Id = 8, Fecha = mesAnterior.AddDays(2), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Alimentacion, Descripcion = "Compras mensuales", Monto = 200.00m },
-            new Gasto { Id = 9, Fecha = mesAnterior.AddDays(5), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Transporte, Descripcion = "Mantenimiento auto", Monto = 120.00m },
-            new Gasto { Id = 10, Fecha = mesAnterior.AddDays(10), CategoriaPresupuestoId = 2, SubCategoria = null, Descripcion = "Concierto", Monto = 75.00m },
-            new Gasto { Id = 11, Fecha = mesAnterior.AddDays(15), CategoriaPresupuestoId = 1, SubCategoria = Categoria.Servicios, Descripcion = "Agua y gas", Monto = 48.50m },
-            new Gasto { Id = 12, Fecha = mesAnterior.AddDays(20), CategoriaPresupuestoId = 5, SubCategoria = null, Descripcion = "Regalos", Monto = 60.00m }
-        );
     }
 }

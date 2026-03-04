@@ -40,7 +40,6 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4">Nombre</th>
-                                <th class="text-center">Tipo</th>
                                 <th class="text-end pe-4" style="width: 150px;">Acciones</th>
                             </tr>
                         </thead>
@@ -49,16 +48,6 @@
                             {
                                 <tr>
                                     <td class="ps-4 fw-medium">@c.Nombre</td>
-                                    <td class="text-center">
-                                        @if(c.EsSistema)
-                                        {
-                                            <span class="badge bg-secondary">Sistema</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-info text-dark">Personalizada</span>
-                                        }
-                                    </td>
                                     <td class="text-end pe-4">
                                         @if (!c.EsSistema)
                                         {
