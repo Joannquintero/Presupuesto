@@ -460,32 +460,42 @@
         await JS.InvokeVoidAsync("renderHorizontalBarChart", "chartHBarras", labels, budget, spent, colors);
     }
 
-    private string GetCategoriaBadgeClass(string nombre) => nombre switch
+    private int GetColorIndex(string seedName)
     {
-        "Obligaciones" => "bg-success",
-        "Gastos Personales" => "bg-primary",
-        "Metas y Ahorro" => "bg-info",
-        "Fondo de Apoyo" => "bg-warning text-dark",
-        _ => "bg-secondary"
-    };
+        int hash = 0;
+        for (int i = 0; i < seedName.Length; i++)
+        {
+            hash = seedName[i] + ((hash << 5) - hash);
+        }
+        return Math.Abs(hash);
+    }
 
-    private string GetCategoriaColor(string nombre) => nombre switch
+    private string GetCategoriaBadgeClass(string nombre)
     {
-        "Obligaciones" => "#198754",
-        "Gastos Personales" => "#0d6efd",
-        "Metas y Ahorro" => "#0dcaf0",
-        "Fondo de Apoyo" => "#ffc107",
-        _ => "#6c757d"
-    };
+        if (nombre == "Obligaciones") return "bg-success";
+        
+        string[] badges = { "bg-primary", "bg-info text-dark", "bg-warning text-dark", "bg-danger", "bg-secondary", "bg-dark" };
+        var index = GetColorIndex(nombre) % badges.Length;
+        return badges[index];
+    }
 
-    private string GetCategoriaBarClass(string nombre) => nombre switch
+    private string GetCategoriaColor(string nombre)
     {
-        "Obligaciones" => "bar-success",
-        "Gastos Personales" => "bar-primary",
-        "Metas y Ahorro" => "bar-info",
-        "Fondo de Apoyo" => "bar-warning",
-        _ => "bar-secondary"
-    };
+        if (nombre == "Obligaciones") return "#198754"; // bg-success
+
+        string[] colors = { "#0d6efd", "#0dcaf0", "#ffc107", "#dc3545", "#6c757d", "#212529" };
+        var index = GetColorIndex(nombre) % colors.Length;
+        return colors[index];
+    }
+
+    private string GetCategoriaBarClass(string nombre)
+    {
+        if (nombre == "Obligaciones") return "bar-success"; // Personalizado
+
+        string[] bars = { "bar-primary", "bar-info", "bar-warning", "bar-danger", "bar-secondary", "bar-dark" };
+        var index = GetColorIndex(nombre) % bars.Length;
+        return bars[index];
+    }
 }
 
 <style>

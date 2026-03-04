@@ -106,14 +106,26 @@ else
     [Parameter]
     public EventCallback<int> OnDelete { get; set; }
 
-    private string GetCategoriaBadgeClass(string? nombre) => nombre switch
+    private int GetColorIndex(string seedName)
     {
-        "Obligaciones" => "bg-success",
-        "Gastos Personales" => "bg-primary",
-        "Metas y Ahorro" => "bg-info",
-        "Fondo de Apoyo" => "bg-warning text-dark",
-        _ => "bg-secondary"
-    };
+        if (string.IsNullOrEmpty(seedName)) return 0;
+        int hash = 0;
+        for (int i = 0; i < seedName.Length; i++)
+        {
+            hash = seedName[i] + ((hash << 5) - hash);
+        }
+        return Math.Abs(hash);
+    }
+
+    private string GetCategoriaBadgeClass(string? nombre)
+    {
+        if (string.IsNullOrEmpty(nombre)) return "bg-secondary";
+        if (nombre == "Obligaciones") return "bg-success";
+        
+        string[] badges = { "bg-primary", "bg-info text-dark", "bg-warning text-dark", "bg-danger", "bg-secondary", "bg-dark" };
+        var index = GetColorIndex(nombre) % badges.Length;
+        return badges[index];
+    }
 }
 
 <style>

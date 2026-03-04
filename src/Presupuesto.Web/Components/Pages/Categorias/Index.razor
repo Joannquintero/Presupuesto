@@ -1,0 +1,173 @@
+@page "/categorias"
+@using Presupuesto.Application.Services
+@using Presupuesto.Domain.Entities
+@inject ICategoriaPresupuestoService CategoriaService
+@rendermode InteractiveServer
+
+<PageTitle>Categorías - Control de Presupuesto</PageTitle>
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-tags me-2"></i>Categorías de Presupuesto
+            </h4>
+            <a href="/categorias/crear" class="btn btn-light btn-sm fw-semibold shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i>Nueva Categoría
+            </a>
+        </div>
+        <div class="card-body p-0">
+            @if (loading)
+            {
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Cargando categorías...</p>
+                </div>
+            }
+            else if (categorias.Count == 0)
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 mb-2"></i>
+                    <p>No hay categorías registradas.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Nombre</th>
+                                <th class="text-center">Tipo</th>
+                                <th class="text-end pe-4" style="width: 150px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in categorias)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-medium">@c.Nombre</td>
+                                    <td class="text-center">
+                                        @if(c.EsSistema)
+                                        {
+                                            <span class="badge bg-secondary">Sistema</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark">Personalizada</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        @if (!c.EsSistema)
+                                        {
+                                            <a href="/categorias/editar/@c.Id" class="btn btn-sm btn-outline-primary me-2" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger" title="Eliminar" @onclick="() => ConfirmarEliminacion(c)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (mostrarModalEliminar)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Eliminación
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro que deseas eliminar la categoría <strong>@categoriaAEliminar?.Nombre</strong>?</p>
+                    @if (!string.IsNullOrEmpty(errorEliminacion))
+                    {
+                        <div class="alert alert-danger mt-2">
+                            <i class="bi bi-exclamation-circle me-1"></i>@errorEliminacion
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelarEliminacion">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="EliminarCategoria" disabled="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<CategoriaPresupuesto> categorias = new();
+    private bool loading = true;
+    
+    private bool mostrarModalEliminar = false;
+    private CategoriaPresupuesto? categoriaAEliminar;
+    private bool isDeleting = false;
+    private string? errorEliminacion;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        loading = true;
+        categorias = await CategoriaService.GetAllAsync();
+        categorias = categorias.OrderByDescending(c => c.EsSistema).ThenBy(c => c.Nombre).ToList();
+        loading = false;
+    }
+
+    private void ConfirmarEliminacion(CategoriaPresupuesto cat)
+    {
+        categoriaAEliminar = cat;
+        errorEliminacion = null;
+        mostrarModalEliminar = true;
+    }
+
+    private void CancelarEliminacion()
+    {
+        mostrarModalEliminar = false;
+        categoriaAEliminar = null;
+    }
+
+    private async Task EliminarCategoria()
+    {
+        if (categoriaAEliminar == null) return;
+        
+        isDeleting = true;
+        errorEliminacion = null;
+        try
+        {
+            await CategoriaService.DeleteAsync(categoriaAEliminar.Id);
+            await CargarDatos();
+            mostrarModalEliminar = false;
+        }
+        catch (Exception ex)
+        {
+            errorEliminacion = ex.Message;
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+}

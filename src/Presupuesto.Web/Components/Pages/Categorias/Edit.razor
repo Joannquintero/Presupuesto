@@ -1,0 +1,134 @@
+@page "/categorias/editar/{Id:int}"
+@using Presupuesto.Application.DTOs
+@using Presupuesto.Application.Services
+@inject ICategoriaPresupuestoService CategoriaService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Editar Categoría - Control de Presupuesto</PageTitle>
+
+<div class="container py-4" style="max-width: 600px;">
+    <div class="mb-4">
+        <a href="/categorias" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al listado
+        </a>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (notFound)
+    {
+        <div class="alert alert-warning animate__animated animate__fadeIn">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Categoría no encontrada.
+            <a href="/categorias" class="alert-link">Volver al listado</a>
+        </div>
+    }
+    else if (isSistema)
+    {
+        <div class="alert alert-danger animate__animated animate__fadeIn">
+            <i class="bi bi-lock me-2"></i>
+            Esta es una categoría de sistema y no puede ser modificada.
+            <a href="/categorias" class="alert-link ms-2">Volver al listado</a>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow border-0">
+            <div class="card-header bg-warning text-dark py-3">
+                <h4 class="mb-0 fw-bold">
+                    <i class="bi bi-pencil-square me-2"></i>Editar Categoría
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <EditForm Model="dto" OnValidSubmit="Guardar" FormName="EditarCategoria">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Nombre de Categoría <span class="text-danger">*</span></label>
+                        <InputText class="form-control" @bind-Value="dto.Nombre" />
+                        <ValidationMessage For="() => dto.Nombre" class="text-danger small" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger animate__animated animate__shakeX mt-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning px-4 fw-bold" disabled="@saving">
+                            @if (saving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            <i class="bi bi-check-lg me-1"></i>Actualizar
+                        </button>
+                        <a href="/categorias" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-x-lg me-1"></i>Cancelar
+                        </a>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CreateUpdateCategoriaPresupuestoDto dto = new();
+    private bool loading = true;
+    private bool notFound = false;
+    private bool isSistema = false;
+    private bool saving = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        var existing = await CategoriaService.GetByIdAsync(Id);
+        
+        if (existing is null)
+        {
+            notFound = true;
+        }
+        else if (existing.EsSistema)
+        {
+            isSistema = true;
+        }
+        else
+        {
+            dto.Nombre = existing.Nombre;
+        }
+        loading = false;
+    }
+
+    private async Task Guardar()
+    {
+        saving = true;
+        errorMessage = null;
+
+        try
+        {
+            await CategoriaService.UpdateAsync(Id, dto);
+            Navigation.NavigateTo("/categorias");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+}
