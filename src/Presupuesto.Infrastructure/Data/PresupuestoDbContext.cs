@@ -92,9 +92,9 @@ public class PresupuestoDbContext : DbContext
         // Seed Categorías Presupuesto
         modelBuilder.Entity<CategoriaPresupuesto>().HasData(
             new CategoriaPresupuesto { Id = 1, Nombre = "Obligaciones" },
-            new CategoriaPresupuesto { Id = 2, Nombre = "Gustos personales" },
-            new CategoriaPresupuesto { Id = 3, Nombre = "Metas-Ahorro" },
-            new CategoriaPresupuesto { Id = 4, Nombre = "Imprevistos" },
+            new CategoriaPresupuesto { Id = 2, Nombre = "Gastos Personales" },
+            new CategoriaPresupuesto { Id = 3, Nombre = "Metas y Ahorro" },
+            new CategoriaPresupuesto { Id = 4, Nombre = "Fondo de Apoyo" },
             new CategoriaPresupuesto { Id = 5, Nombre = "Otros" }
         );
 

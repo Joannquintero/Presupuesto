@@ -463,27 +463,27 @@
     private string GetCategoriaBadgeClass(string nombre) => nombre switch
     {
         "Obligaciones" => "bg-success",
-        "Gustos personales" => "bg-primary",
-        "Metas-Ahorro" => "bg-info",
-        "Imprevistos" => "bg-warning text-dark",
+        "Gastos Personales" => "bg-primary",
+        "Metas y Ahorro" => "bg-info",
+        "Fondo de Apoyo" => "bg-warning text-dark",
         _ => "bg-secondary"
     };
 
     private string GetCategoriaColor(string nombre) => nombre switch
     {
         "Obligaciones" => "#198754",
-        "Gustos personales" => "#0d6efd",
-        "Metas-Ahorro" => "#0dcaf0",
-        "Imprevistos" => "#ffc107",
+        "Gastos Personales" => "#0d6efd",
+        "Metas y Ahorro" => "#0dcaf0",
+        "Fondo de Apoyo" => "#ffc107",
         _ => "#6c757d"
     };
 
     private string GetCategoriaBarClass(string nombre) => nombre switch
     {
         "Obligaciones" => "bar-success",
-        "Gustos personales" => "bar-primary",
-        "Metas-Ahorro" => "bar-info",
-        "Imprevistos" => "bar-warning",
+        "Gastos Personales" => "bar-primary",
+        "Metas y Ahorro" => "bar-info",
+        "Fondo de Apoyo" => "bar-warning",
         _ => "bar-secondary"
     };
 }
