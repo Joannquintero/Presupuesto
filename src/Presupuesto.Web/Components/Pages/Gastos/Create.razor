@@ -26,7 +26,7 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Fecha</label>
-                            <InputDate class="form-control" @bind-Value="gasto.Fecha" @bind-Value:after="ActualizarDisponible" />
+                            <InputDate class="form-control" @bind-Value="gasto.Fecha" @bind-Value:after="OnFechaChanged" />
                             <ValidationMessage For="() => gasto.Fecha" class="text-danger small" />
                         </div>
 
@@ -37,7 +37,7 @@
                                          Value="@gasto.CategoriaPresupuestoId"
                                          ValueChanged="@((int val) => OnCategoriaChanged(val))">
                                 <option value="0">Seleccione</option>
-                                @foreach (var cat in categoriasPresupuesto)
+                                @foreach (var cat in categoriasMostradas)
                                 {
                                     <option value="@cat.Id">@cat.Nombre</option>
                                 }
@@ -166,6 +166,7 @@
 @code {
     private CreateUpdateGastoDto gasto = new();
     private List<CategoriaPresupuesto> categoriasPresupuesto = new();
+    private List<CategoriaPresupuesto> categoriasMostradas = new();
     private bool saving = false;
     private string? errorMessage;
     private decimal[] montosPredefinidos = { 5000, 10000, 20000, 50000, 100000 };
@@ -177,7 +178,38 @@
     protected override async Task OnInitializedAsync()
     {
         categoriasPresupuesto = await CategoriaPresupuestoService.GetAllAsync();
+        categoriasMostradas = categoriasPresupuesto.ToList();
+        await ActualizarCategoriasVisibles();
         await ActualizarDisponible();
+    }
+
+    private async Task ActualizarCategoriasVisibles()
+    {
+        var presupuestos = await PresupuestoService.GetByFilterAsync(gasto.Fecha.Year, gasto.Fecha.Month, null);
+        var pm = presupuestos.FirstOrDefault();
+        
+        if (pm != null)
+        {
+            var categoriasBloqueadas = pm.Distribuciones
+                .Where(d => d.Bloqueada)
+                .Select(d => d.CategoriaPresupuestoId)
+                .ToList();
+                
+            categoriasMostradas = categoriasPresupuesto
+                .Where(c => !categoriasBloqueadas.Contains(c.Id))
+                .ToList();
+        }
+        else
+        {
+            categoriasMostradas = categoriasPresupuesto.ToList();
+        }
+
+        // Si la categoría seleccionada actualmente quedó bloqueada, limpiamos la selección
+        if (gasto.CategoriaPresupuestoId > 0 && !categoriasMostradas.Any(c => c.Id == gasto.CategoriaPresupuestoId))
+        {
+            gasto.CategoriaPresupuestoId = 0;
+            gasto.SubCategoria = null;
+        }
     }
 
     private decimal? montoDisponible;
@@ -219,6 +251,12 @@
         {
             montoDisponible = null;
         }
+    }
+
+    private async Task OnFechaChanged()
+    {
+        await ActualizarCategoriasVisibles();
+        await ActualizarDisponible();
     }
 
     private void SeleccionarMonto(decimal m)

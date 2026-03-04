@@ -87,7 +87,8 @@ public class PresupuestoMensualService : IPresupuestoMensualService
             {
                 CategoriaPresupuestoId = d.CategoriaPresupuestoId,
                 Porcentaje = d.Porcentaje,
-                Monto = d.Monto
+                Monto = d.Monto,
+                Bloqueada = d.Bloqueada
             }).ToList()
         };
 
@@ -125,7 +126,8 @@ public class PresupuestoMensualService : IPresupuestoMensualService
             {
                 CategoriaPresupuestoId = d.CategoriaPresupuestoId,
                 Porcentaje = d.Porcentaje,
-                Monto = d.Monto
+                Monto = d.Monto,
+                Bloqueada = d.Bloqueada
             });
         }
 
@@ -174,7 +176,8 @@ public class PresupuestoMensualService : IPresupuestoMensualService
                 CategoriaPresupuestoId = d.CategoriaPresupuestoId,
                 CategoriaNombre = d.CategoriaPresupuesto?.Nombre ?? string.Empty,
                 Porcentaje = d.Porcentaje,
-                Monto = d.Monto
+                Monto = d.Monto,
+                Bloqueada = d.Bloqueada
             }).ToList()
         };
     }

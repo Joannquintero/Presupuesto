@@ -7,4 +7,5 @@ public class DistribucionPresupuestoDto
     public string CategoriaNombre { get; set; } = string.Empty;
     public decimal Porcentaje { get; set; }
     public decimal Monto { get; set; }
+    public bool Bloqueada { get; set; } = false;
 }

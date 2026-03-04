@@ -15,6 +15,8 @@ public class DistribucionPresupuesto
     [Required]
     public decimal Monto { get; set; }
 
+    public bool Bloqueada { get; set; } = false;
+
     // Propiedades de Navegación
     public PresupuestoMensual PresupuestoMensual { get; set; } = null!;
     public CategoriaPresupuesto CategoriaPresupuesto { get; set; } = null!;
