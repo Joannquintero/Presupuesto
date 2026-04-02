@@ -97,7 +97,7 @@
                                     <th class="text-end">Presupuesto</th>
                                     <th class="text-end">Saldo Actual</th>
                                     <th>Concepto</th>
-                                    <th class="text-center">Acciones</th>
+                                    <th class="text-center" style="min-width: 120px;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -125,24 +125,26 @@
                                             }
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-sm btn-outline-success me-1"
-                                                    style="width:32px;height:32px;padding:0;"
-                                                    title="Ajustar saldo"
-                                                    @onclick="() => AbrirModalSaldo(presupuestoId)">
-                                                ±
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-primary me-1"
-                                                    style="width:32px;height:32px;padding:0;"
-                                                    title="Editar"
-                                                    @onclick="() => EditarPresupuesto(presupuestoId)">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger"
-                                                    style="width:32px;height:32px;padding:0;"
-                                                    title="Eliminar"
-                                                    @onclick="() => MostrarModalEliminar(presupuestoId)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                                <button class="btn btn-sm btn-outline-success"
+                                                        style="width:32px;height:32px;padding:0;"
+                                                        title="Ajustar saldo"
+                                                        @onclick="() => AbrirModalSaldo(presupuestoId)">
+                                                    ±
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-primary"
+                                                        style="width:32px;height:32px;padding:0;"
+                                                        title="Editar"
+                                                        @onclick="() => EditarPresupuesto(presupuestoId)">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        style="width:32px;height:32px;padding:0;"
+                                                        title="Eliminar"
+                                                        @onclick="() => MostrarModalEliminar(presupuestoId)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
