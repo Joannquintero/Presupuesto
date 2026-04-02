@@ -20,7 +20,7 @@ else
                         <th>Categoría</th>
                         <th>Descripción</th>
                         <th class="text-end">Monto</th>
-                        <th class="text-center">Acciones</th>
+                        <th class="text-center acciones-col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,13 +35,15 @@ else
                             </td>
                             <td>@gasto.Descripcion</td>
                             <td class="text-end fw-bold">@gasto.Monto.ToString("C2")</td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => OnEdit.InvokeAsync(gasto.Id)" title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => OnDelete.InvokeAsync(gasto.Id)" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                            <td class="text-center acciones-col">
+                                <div class="acciones-btns">
+                                    <button class="btn btn-sm btn-outline-primary" @onclick="() => OnEdit.InvokeAsync(gasto.Id)" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => OnDelete.InvokeAsync(gasto.Id)" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -207,9 +209,23 @@ else
         padding: 4px 10px;
     }
 
-    /* ===== Total row ===== */
     .gasto-card-total {
         background: #e8f5e9;
         border-color: #c8e6c9;
+    }
+
+    .acciones-col {
+        min-width: 90px;
+        width: 90px;
+        white-space: nowrap;
+    }
+
+    .acciones-btns {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
     }
 </style>
