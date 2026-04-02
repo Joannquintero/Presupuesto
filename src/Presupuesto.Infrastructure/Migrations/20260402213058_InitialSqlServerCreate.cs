@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Presupuesto.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSqlServerCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,9 +17,10 @@ namespace Presupuesto.Infrastructure.Migrations
                 name: "CategoriasPresupuesto",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nombre = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    EsSistema = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -30,14 +31,14 @@ namespace Presupuesto.Infrastructure.Migrations
                 name: "PresupuestosMensuales",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Anio = table.Column<int>(type: "INTEGER", nullable: false),
-                    Mes = table.Column<int>(type: "INTEGER", nullable: false),
-                    Monto = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false),
-                    Concepto = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    FechaInicio = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    FechaFin = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Anio = table.Column<int>(type: "int", nullable: false),
+                    Mes = table.Column<int>(type: "int", nullable: false),
+                    Monto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Concepto = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FechaFin = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -48,13 +49,13 @@ namespace Presupuesto.Infrastructure.Migrations
                 name: "Gastos",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Fecha = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    CategoriaPresupuestoId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SubCategoria = table.Column<int>(type: "INTEGER", nullable: true),
-                    Descripcion = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Monto = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CategoriaPresupuestoId = table.Column<int>(type: "int", nullable: false),
+                    SubCategoria = table.Column<int>(type: "int", nullable: true),
+                    Descripcion = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Monto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -71,12 +72,13 @@ namespace Presupuesto.Infrastructure.Migrations
                 name: "DistribucionesPresupuesto",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    PresupuestoMensualId = table.Column<int>(type: "INTEGER", nullable: false),
-                    CategoriaPresupuestoId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Porcentaje = table.Column<decimal>(type: "TEXT", precision: 5, scale: 2, nullable: false),
-                    Monto = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PresupuestoMensualId = table.Column<int>(type: "int", nullable: false),
+                    CategoriaPresupuestoId = table.Column<int>(type: "int", nullable: false),
+                    Porcentaje = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    Monto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Bloqueada = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -99,17 +101,24 @@ namespace Presupuesto.Infrastructure.Migrations
                 name: "SaldosPresupuesto",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    PresupuestoMensualId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Monto = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false),
-                    Concepto = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    Tipo = table.Column<int>(type: "INTEGER", nullable: false),
-                    Fecha = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PresupuestoMensualId = table.Column<int>(type: "int", nullable: false),
+                    CategoriaPresupuestoId = table.Column<int>(type: "int", nullable: false),
+                    Monto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Concepto = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Tipo = table.Column<int>(type: "int", nullable: false),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SaldosPresupuesto", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SaldosPresupuesto_CategoriasPresupuesto_CategoriaPresupuestoId",
+                        column: x => x.CategoriaPresupuestoId,
+                        principalTable: "CategoriasPresupuesto",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_SaldosPresupuesto_PresupuestosMensuales_PresupuestoMensualId",
                         column: x => x.PresupuestoMensualId,
@@ -120,33 +129,14 @@ namespace Presupuesto.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "CategoriasPresupuesto",
-                columns: new[] { "Id", "Nombre" },
+                columns: new[] { "Id", "EsSistema", "Nombre" },
                 values: new object[,]
                 {
-                    { 1, "Obligaciones" },
-                    { 2, "Gustos personales" },
-                    { 3, "Metas-Ahorro" },
-                    { 4, "Imprevistos" },
-                    { 5, "Otros" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Gastos",
-                columns: new[] { "Id", "CategoriaPresupuestoId", "Descripcion", "Fecha", "Monto", "SubCategoria" },
-                values: new object[,]
-                {
-                    { 1, 1, "Supermercado semanal", new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), 150.50m, 1 },
-                    { 2, 1, "Gasolina", new DateTime(2026, 2, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), 80.00m, 2 },
-                    { 3, 1, "Factura de luz", new DateTime(2026, 2, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), 65.30m, 3 },
-                    { 4, 2, "Cine y cena", new DateTime(2026, 2, 8, 0, 0, 0, 0, DateTimeKind.Unspecified), 45.00m, null },
-                    { 5, 1, "Restaurante", new DateTime(2026, 2, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 32.50m, 1 },
-                    { 6, 1, "Internet", new DateTime(2026, 2, 13, 0, 0, 0, 0, DateTimeKind.Unspecified), 55.00m, 3 },
-                    { 7, 1, "Medicinas", new DateTime(2026, 2, 16, 0, 0, 0, 0, DateTimeKind.Unspecified), 28.75m, 5 },
-                    { 8, 1, "Compras mensuales", new DateTime(2026, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), 200.00m, 1 },
-                    { 9, 1, "Mantenimiento auto", new DateTime(2026, 1, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), 120.00m, 2 },
-                    { 10, 2, "Concierto", new DateTime(2026, 1, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 75.00m, null },
-                    { 11, 1, "Agua y gas", new DateTime(2026, 1, 16, 0, 0, 0, 0, DateTimeKind.Unspecified), 48.50m, 3 },
-                    { 12, 5, "Regalos", new DateTime(2026, 1, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), 60.00m, null }
+                    { 1, true, "Obligaciones" },
+                    { 2, false, "Gastos Personales" },
+                    { 3, false, "Metas y Ahorro" },
+                    { 4, false, "Fondo de Apoyo" },
+                    { 5, false, "Otros" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -162,6 +152,11 @@ namespace Presupuesto.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Gastos_CategoriaPresupuestoId",
                 table: "Gastos",
+                column: "CategoriaPresupuestoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SaldosPresupuesto_CategoriaPresupuestoId",
+                table: "SaldosPresupuesto",
                 column: "CategoriaPresupuestoId");
 
             migrationBuilder.CreateIndex(

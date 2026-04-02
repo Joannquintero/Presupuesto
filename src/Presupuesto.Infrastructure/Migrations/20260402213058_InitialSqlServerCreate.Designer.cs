@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Presupuesto.Infrastructure.Data;
@@ -11,28 +12,34 @@ using Presupuesto.Infrastructure.Data;
 namespace Presupuesto.Infrastructure.Migrations
 {
     [DbContext(typeof(PresupuestoDbContext))]
-    [Migration("20260304153912_AddEsSistemaToCategoria")]
-    partial class AddEsSistemaToCategoria
+    [Migration("20260402213058_InitialSqlServerCreate")]
+    partial class InitialSqlServerCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Presupuesto.Domain.Entities.CategoriaPresupuesto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("EsSistema")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bit");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -75,24 +82,26 @@ namespace Presupuesto.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Bloqueada")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bit");
 
                     b.Property<int>("CategoriaPresupuestoId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Monto")
                         .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Porcentaje")
                         .HasPrecision(5, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<int>("PresupuestoMensualId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -107,164 +116,61 @@ namespace Presupuesto.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoriaPresupuestoId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("Monto")
                         .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("SubCategoria")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoriaPresupuestoId");
 
                     b.ToTable("Gastos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Supermercado semanal",
-                            Fecha = new DateTime(2026, 3, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 150.50m,
-                            SubCategoria = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Gasolina",
-                            Fecha = new DateTime(2026, 3, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 80.00m,
-                            SubCategoria = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Factura de luz",
-                            Fecha = new DateTime(2026, 3, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 65.30m,
-                            SubCategoria = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CategoriaPresupuestoId = 2,
-                            Descripcion = "Cine y cena",
-                            Fecha = new DateTime(2026, 3, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 45.00m
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Restaurante",
-                            Fecha = new DateTime(2026, 3, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 32.50m,
-                            SubCategoria = 1
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Internet",
-                            Fecha = new DateTime(2026, 3, 13, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 55.00m,
-                            SubCategoria = 3
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Medicinas",
-                            Fecha = new DateTime(2026, 3, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 28.75m,
-                            SubCategoria = 5
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Compras mensuales",
-                            Fecha = new DateTime(2026, 2, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 200.00m,
-                            SubCategoria = 1
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Mantenimiento auto",
-                            Fecha = new DateTime(2026, 2, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 120.00m,
-                            SubCategoria = 2
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CategoriaPresupuestoId = 2,
-                            Descripcion = "Concierto",
-                            Fecha = new DateTime(2026, 2, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 75.00m
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CategoriaPresupuestoId = 1,
-                            Descripcion = "Agua y gas",
-                            Fecha = new DateTime(2026, 2, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 48.50m,
-                            SubCategoria = 3
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CategoriaPresupuestoId = 5,
-                            Descripcion = "Regalos",
-                            Fecha = new DateTime(2026, 2, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Monto = 60.00m
-                        });
                 });
 
             modelBuilder.Entity("Presupuesto.Domain.Entities.PresupuestoMensual", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Anio")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Concepto")
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("FechaFin")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaInicio")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Mes")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Monto")
                         .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -275,27 +181,29 @@ namespace Presupuesto.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoriaPresupuestoId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Concepto")
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("Monto")
                         .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("PresupuestoMensualId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("Tipo")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

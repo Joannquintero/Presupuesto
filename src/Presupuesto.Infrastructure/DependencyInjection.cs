@@ -12,9 +12,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
-        // Configurar DbContext con SQLite
+        // Configurar DbContext con SQL Server
         services.AddDbContext<PresupuestoDbContext>(options =>
-            options.UseSqlite(connectionString));
+            options.UseSqlServer(connectionString));
 
         // Registrar DbContext base para el servicio
         services.AddScoped<DbContext>(provider => provider.GetRequiredService<PresupuestoDbContext>());
