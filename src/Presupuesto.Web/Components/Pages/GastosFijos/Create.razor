@@ -1,0 +1,147 @@
+@page "/gastosfijos/crear"
+@using Presupuesto.Application.DTOs
+@using Presupuesto.Application.Services
+@using Presupuesto.Domain.Enums
+@using Presupuesto.Domain.Entities
+@inject IGastoFijoService GastoFijoService
+@inject ICategoriaPresupuestoService CategoriaService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Nuevo Gasto Fijo - Control de Presupuesto</PageTitle>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white rounded-top-4 py-3">
+                    <h4 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Nuevo Gasto Fijo
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <EditForm Model="gasto" OnValidSubmit="Guardar" FormName="CreateGastoFijo">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Concepto</label>
+                            <InputText class="form-control" @bind-Value="gasto.Concepto" placeholder="Ej: Pago de Internet" />
+                            <ValidationMessage For="() => gasto.Concepto" class="text-danger small" />
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Monto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light fw-bold">$</span>
+                                    <input type="text" class="form-control fw-bold" 
+                                           inputmode="numeric"
+                                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                           value="@montoFormateado"
+                                           @oninput="OnMontoInput"
+                                           placeholder="0" />
+                                </div>
+                                <ValidationMessage For="() => gasto.Monto" class="text-danger small" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Frecuencia</label>
+                                <InputSelect class="form-select" @bind-Value="gasto.Frecuencia">
+                                    <option value="@FrecuenciaGasto.Mensual">Mensual</option>
+                                    <option value="@FrecuenciaGasto.Anual">Anual</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => gasto.Frecuencia" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Fecha</label>
+                                <InputDate class="form-control" @bind-Value="gasto.Fecha" />
+                                <ValidationMessage For="() => gasto.Fecha" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        <div class="mb-4 form-check form-switch">
+                            <InputCheckbox class="form-check-input" id="activoCheck" @bind-Value="gasto.Activo" />
+                            <label class="form-check-label fw-semibold" for="activoCheck">Activo</label>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/gastosfijos" class="btn btn-light rounded-pill px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4" disabled="@guardando">
+                                @if (guardando)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Guardando...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-save me-2"></i><span>Guardar</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateUpdateGastoFijoDto gasto = new();
+    private IEnumerable<CategoriaPresupuesto> categorias = new List<CategoriaPresupuesto>();
+    private bool guardando = false;
+    private string montoFormateado = "0";
+
+    protected override async Task OnInitializedAsync()
+    {
+        gasto.Fecha = DateTime.Today;
+        gasto.Activo = true;
+        gasto.Frecuencia = FrecuenciaGasto.Mensual;
+        
+        var catList = await CategoriaService.GetAllAsync();
+        categorias = catList.Where(c => c.EsSistema || !c.EsSistema); 
+        
+        var catGastoFijo = categorias.FirstOrDefault(c => c.Nombre.Equals("Gastos Fijos", StringComparison.OrdinalIgnoreCase));
+        if (catGastoFijo != null)
+        {
+            gasto.CategoriaPresupuestoId = catGastoFijo.Id;
+        }
+    }
+
+    private void OnMontoInput(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString() ?? string.Empty;
+        var soloNumeros = new string(val.Where(char.IsDigit).ToArray());
+
+        if (decimal.TryParse(soloNumeros, out var monto))
+        {
+            gasto.Monto = monto;
+            montoFormateado = monto.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
+        }
+        else
+        {
+            gasto.Monto = 0;
+            montoFormateado = "0";
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (gasto.CategoriaPresupuestoId == 0)
+        {
+            return; // TODO: mostrar error
+        }
+
+        guardando = true;
+        try
+        {
+            await GastoFijoService.CreateAsync(gasto);
+            Navigation.NavigateTo("/gastosfijos");
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

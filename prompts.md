@@ -142,7 +142,7 @@ Crea un nuevo componente (CRUD) para lista de deseos. Debe tener los siguientes 
 - Concepto (Concepto) - Texto opcional
 - Monto (1000) - Decimal
 - Fecha (Fecha) - Fecha
-- Categoria (Categoria) - Combobox
+- Categoria (Categoria) - Combobox (tecnologia, personales, salud, hogar, compras, suscripciones, transporte, alimentos, servicios, otros)
 - Prioridad (1-10) - Numero 
 - Activo (Activo) - Checkbox
 

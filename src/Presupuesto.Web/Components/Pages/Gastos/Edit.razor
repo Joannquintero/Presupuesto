@@ -6,6 +6,7 @@
 @inject IPresupuestoMensualService PresupuestoService
 @inject ICategoriaPresupuestoService CategoriaPresupuestoService
 @inject IGastoService GastoService
+@inject IGastoFijoService GastoFijoService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -104,8 +105,27 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Descripción <span class="text-muted fw-normal fs-small">(Opcional)</span></label>
-                                <InputText class="form-control" @bind-Value="gasto.Descripcion" placeholder="Ej: Pago de arriendo" />
+                                <label class="form-label fw-semibold">
+                                    Descripción
+                                    @if (!categoriaEsGastoFijo)
+                                    {
+                                        <span class="text-muted fw-normal fs-small">(Opcional)</span>
+                                    }
+                                </label>
+                                @if (categoriaEsGastoFijo)
+                                {
+                                    <InputSelect class="form-select" @bind-Value="gasto.Descripcion" @bind-Value:after="OnGastoFijoSeleccionado">
+                                        <option value="">Seleccione un gasto fijo...</option>
+                                        @foreach (var gf in gastosFijosActivos)
+                                        {
+                                            <option value="@gf.Concepto">@gf.Concepto</option>
+                                        }
+                                    </InputSelect>
+                                }
+                                else
+                                {
+                                    <InputText class="form-control" @bind-Value="gasto.Descripcion" placeholder="Ej: Pago de arriendo" />
+                                }
                                 <ValidationMessage For="() => gasto.Descripcion" class="text-danger small" />
                             </div>
 
@@ -198,10 +218,16 @@
 
     private string selectClass => $"form-select {(categoriaEsObligaciones ? "mb-2" : "")}";
     private bool categoriaEsObligaciones => categoriasPresupuesto.FirstOrDefault(c => c.Id == gasto.CategoriaPresupuestoId)?.Nombre == "Obligaciones";
+    private bool categoriaEsGastoFijo => categoriasPresupuesto.FirstOrDefault(c => c.Id == gasto.CategoriaPresupuestoId)?.Nombre == "Gastos Fijos";
+    private List<GastoFijoDto> gastosFijosActivos = new();
 
     protected override async Task OnInitializedAsync()
     {
         categoriasPresupuesto = await CategoriaPresupuestoService.GetAllAsync();
+        
+        var gfActivos = await GastoFijoService.GetActivosAsync();
+        gastosFijosActivos = gfActivos.ToList();
+
         var existing = await GastoService.GetByIdAsync(Id);
         if (existing is null)
         {
@@ -262,6 +288,15 @@
                  categoriasMostradas.Add(catGasto);
                  categoriasMostradas = categoriasMostradas.OrderBy(c => c.Nombre).ToList();
              }
+        }
+    }
+
+    private void OnGastoFijoSeleccionado()
+    {
+        var gf = gastosFijosActivos.FirstOrDefault(x => x.Concepto == gasto.Descripcion);
+        if (gf != null)
+        {
+            SeleccionarMonto(gf.Monto);
         }
     }
 
