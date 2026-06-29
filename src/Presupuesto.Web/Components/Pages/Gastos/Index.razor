@@ -139,6 +139,11 @@
         // Establecer mes y año actual por defecto
         filtroAnio = DateTime.Now.Year.ToString();
         filtroMes = DateTime.Now.Month.ToString();
+        
+        // Asignar fecha actual por defecto en Fecha Inicio y Fecha Fin
+        filtroFechaInicio = DateTime.Today;
+        filtroFechaFin = DateTime.Today;
+
         await FiltrarGastos();
     }
 

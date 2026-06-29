@@ -114,3 +114,39 @@ Al crear o editar un gasto, realizar los siguientes ajustes:
 2. Se debe validar que el monto del gasto no exceda el monto disponible en el presupuesto mensual para la categoria correspondiente. Si excede, se debe mostrar un mensaje de error y no se debe permitir guardar el gasto.  
 3. Incluir plan step by step para todas las implementaciones.
 4. Se debe mostrar el monto disponible en el presupuesto mensual para la categoria correspondiente al crear o editar un gasto de acuerdo a la fecha del gasto y la categoria seleccionada.  
+
+----------------------------------------
+Crear un nuevo componente (CRUD) que permita registrar los gastos fijos y recurrentes. Debe tener los siguientes campos:
+
+- Concepto (Concepto) - Texto opcional
+- Monto (1000) - Decimal
+- Frecuencia (Mensual/Anual) - Combobox
+- Fecha (Fecha) - Fecha
+- Categoria (Categoria) - Combobox
+- Activo (Activo) - Checkbox
+
+En los gastos fijos y recurrentes, no se debe validar que exista un presupuesto mensual para el mismo año y mes.
+Solo es de caracter informativo, para tener en cuenta en el registro de gastos
+
+----------------------------------------
+En nuevo gasto, se debe implementar validacion para que se calcule el valor maximo a gastar por dia de acuerdo al saldo disponible en el presupuesto mensual para la categoria correspondiente al gasto y la fecha del gasto.
+
+El valor maximo a gastar por dia se calcula de la siguiente manera:
+
+Monto disponible en el presupuesto mensual para la categoria correspondiente al gasto / Numero de dias en el mes - (Gastos fijos y recurrentes del mes para la categoria correspondiente al gasto / Numero de dias en el mes)
+
+Los gastos fijos y recurrentes se deben calcular de acuerdo a la fecha del gasto y la categoria correspondiente al gasto.   
+Si excede, se debe mostrar un mensaje de error, pero permitir guardar el gasto.
+
+----------------------------------------
+
+Crea un nuevo componente (CRUD) para lista de deseos. Debe tener los siguientes campos:
+
+- Concepto (Concepto) - Texto opcional
+- Monto (1000) - Decimal
+- Fecha (Fecha) - Fecha
+- Categoria (Categoria) - Combobox
+- Prioridad (1-10) - Numero 
+- Activo (Activo) - Checkbox
+
+La lista de deseos se debe guardar en la base de datos como una tabla separada de los gastos.    
