@@ -74,6 +74,13 @@
                                             </span>
                                         }
                                     </div>
+                                    @if (!consultandoDisponible && montoMaximoPorDia.HasValue)
+                                    {
+                                        <div class="alert alert-warning mt-2 mb-0 py-1 px-2 small animate__animated animate__fadeIn">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                            Valor máximo a gastar por día recomendado: <strong>@montoMaximoPorDia.Value.ToString("C0")</strong>
+                                        </div>
+                                    }
                                     @if (!consultandoDisponible && !montoDisponible.HasValue)
                                     {
                                         <div class="text-warning mt-1" style="font-size: 0.75rem;">
@@ -137,6 +144,8 @@
                             <ValidationMessage For="() => gasto.Monto" class="text-danger small" />
                         </div>
 
+
+
                         @if (!string.IsNullOrEmpty(errorMessage))
                         {
                             <div class="alert alert-danger animate__animated animate__shakeX">
@@ -171,6 +180,7 @@
     private string? errorMessage;
     private decimal[] montosPredefinidos = { 5000, 10000, 20000, 50000, 100000 };
     private string montoFormateado = "0";
+    private decimal? montoMaximoPorDia;
 
     private string selectClass => $"form-select {(categoriaEsObligaciones ? "mb-2" : "")}";
     private bool categoriaEsObligaciones => categoriasPresupuesto.FirstOrDefault(c => c.Id == gasto.CategoriaPresupuestoId)?.Nombre == "Obligaciones";
@@ -234,11 +244,30 @@
                 consultandoDisponible = true;
                 StateHasChanged();
                 montoDisponible = await GastoService.GetDisponibleCategoriaAsync(gasto.Fecha.Year, gasto.Fecha.Month, gasto.CategoriaPresupuestoId);
+                
+                if (montoDisponible.HasValue)
+                {
+                    int diasEnMes = DateTime.DaysInMonth(gasto.Fecha.Year, gasto.Fecha.Month);
+                    int diasRestantes = diasEnMes - gasto.Fecha.Day + 1;
+                    if (diasRestantes > 0)
+                    {
+                        montoMaximoPorDia = montoDisponible.Value / diasRestantes;
+                    }
+                    else
+                    {
+                        montoMaximoPorDia = montoDisponible.Value;
+                    }
+                }
+                else
+                {
+                    montoMaximoPorDia = null;
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al consultar disponibilidad: {ex.Message}");
                 montoDisponible = null;
+                montoMaximoPorDia = null;
                 errorMessage = $"Error técnico al consultar presupuesto: {ex.Message}";
             }
             finally
@@ -250,6 +279,7 @@
         else
         {
             montoDisponible = null;
+            montoMaximoPorDia = null;
         }
     }
 

@@ -13,7 +13,9 @@ public class PresupuestoDbContext : DbContext
     {
     }
 
-    public DbSet<Gasto> Gastos => Set<Gasto>();
+    public DbSet<Gasto> Gastos { get; set; } = null!;
+    public DbSet<GastoFijoRecurrente> GastosFijosRecurrentes { get; set; } = null!;
+    public DbSet<ListaDeseo> ListasDeseos { get; set; } = null!;
     public DbSet<PresupuestoMensual> PresupuestosMensuales => Set<PresupuestoMensual>();
     public DbSet<SaldoPresupuesto> SaldosPresupuesto => Set<SaldoPresupuesto>();
     public DbSet<CategoriaPresupuesto> CategoriasPresupuesto => Set<CategoriaPresupuesto>();
@@ -81,6 +83,32 @@ public class PresupuestoDbContext : DbContext
                   .WithMany(p => p.Saldos)
                   .HasForeignKey(e => e.PresupuestoMensualId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<GastoFijoRecurrente>(entity =>
+        {
+            entity.HasKey(g => g.Id);
+            entity.Property(g => g.Concepto).HasMaxLength(200);
+            entity.Property(g => g.Monto).HasColumnType("decimal(18,2)");
+            entity.Property(g => g.Fecha).IsRequired();
+
+            entity.HasOne(g => g.CategoriaPresupuesto)
+                .WithMany()
+                .HasForeignKey(g => g.CategoriaPresupuestoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ListaDeseo>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.Concepto).HasMaxLength(200);
+            entity.Property(l => l.Monto).HasColumnType("decimal(18,2)");
+            entity.Property(l => l.Fecha).IsRequired();
+
+            entity.HasOne(l => l.CategoriaPresupuesto)
+                .WithMany()
+                .HasForeignKey(l => l.CategoriaPresupuestoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Seed de datos iniciales

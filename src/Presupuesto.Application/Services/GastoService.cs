@@ -139,10 +139,10 @@ public class GastoService : IGastoService
 
         decimal disponible = distribucion.Monto - gastosActuales;
 
-        if (dto.Monto > disponible)
-        {
-            throw new InvalidOperationException($"El monto del gasto (${dto.Monto:N0}) excede el presupuesto disponible para esta categoría (${disponible:N0}).");
-        }
+        //if (dto.Monto > disponible)
+        //{
+        //    throw new InvalidOperationException($"El monto del gasto (${dto.Monto:N0}) excede el presupuesto disponible para esta categoría (${disponible:N0}).");
+        //}
     }
 
     public async Task<bool> DeleteAsync(int id)
