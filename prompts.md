@@ -149,4 +149,4 @@ Crea un nuevo componente (CRUD) para lista de deseos. Debe tener los siguientes 
 La lista de deseos se debe guardar en la base de datos como una tabla separada de los gastos.    
 
 ----------------------------------------
-En crear o editar gasto, agregar dos botones para agregar o quitar valor al campo monto con incrementos/decrementos de 1000 en 1000. Se debe validar que el monto no sea negativo.    
+En crear o editar gasto, agregar dos botones para agregar o quitar valor al campo monto con incrementos/decrementos de 1000 en 1000. Se debe validar que el monto no sea negativo. 

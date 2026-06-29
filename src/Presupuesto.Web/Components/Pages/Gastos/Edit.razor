@@ -164,13 +164,19 @@
                             <div class="mb-4">
                                 <label class="form-label fw-semibold">Monto</label>
                                 <div class="input-group input-group-lg">
-                                    <span class="input-group-text bg-light text-dark fw-bold">$</span>
-                                    <input type="text" class="form-control fw-bold" 
+                                    <button type="button" class="btn btn-outline-secondary" @onclick="DecrementarMonto" disabled="@(gasto.Monto < 1000)">
+                                        <i class="bi bi-dash-lg"></i>
+                                    </button>
+                                    <span class="input-group-text bg-light text-dark fw-bold border-start-0 border-end-0">$</span>
+                                    <input type="text" class="form-control fw-bold text-center border-start-0 border-end-0" 
                                            inputmode="numeric"
                                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                            value="@montoFormateado"
                                            @oninput="OnMontoInput"
                                            placeholder="0" />
+                                    <button type="button" class="btn btn-outline-secondary" @onclick="IncrementarMonto">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
                                 </div>
                                 <ValidationMessage For="() => gasto.Monto" class="text-danger small" />
                             </div>
@@ -367,6 +373,21 @@
         {
             gasto.Monto = 0;
             montoFormateado = "0";
+        }
+    }
+
+    private void IncrementarMonto()
+    {
+        gasto.Monto += 1000;
+        montoFormateado = gasto.Monto.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
+    }
+
+    private void DecrementarMonto()
+    {
+        if (gasto.Monto >= 1000)
+        {
+            gasto.Monto -= 1000;
+            montoFormateado = gasto.Monto.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
         }
     }
 

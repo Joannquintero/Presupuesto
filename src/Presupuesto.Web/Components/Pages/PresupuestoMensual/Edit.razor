@@ -130,8 +130,9 @@
                                                            inputmode="numeric"
                                                            maxlength="3"
                                                            onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                                           value="@((int)dist.Porcentaje)" 
-                                                           @oninput="(e) => OnPorcentajeInput(dist, e)" />
+                                                           @bind="dist.Porcentaje" 
+                                                           @bind:event="oninput"
+                                                           @bind:after="RecalcularMontos" />
                                                     <span class="input-group-text">%</span>
                                                 </div>
                                             </td>
@@ -338,24 +339,7 @@
         dto.Distribuciones.Remove(dist);
     }
 
-    private void OnPorcentajeInput(DistribucionPresupuestoDto dist, ChangeEventArgs e)
-    {
-        var raw = e.Value?.ToString() ?? string.Empty;
-        var solo = new string(raw.Where(char.IsDigit).ToArray());
 
-        if (string.IsNullOrEmpty(solo))
-        {
-            dist.Porcentaje = 0;
-            RecalcularMontos();
-            return;
-        }
-
-        if (int.TryParse(solo, out var val))
-        {
-            dist.Porcentaje = Math.Clamp(val, 0, 100);
-            RecalcularMontos();
-        }
-    }
 
     private void RecalcularMontos()
     {
