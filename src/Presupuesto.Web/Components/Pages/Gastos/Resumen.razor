@@ -276,6 +276,25 @@
             </div>
         </div>
 
+        <!-- Gráfica: Gastos por Día -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-day text-info me-2"></i>Gastos por Día
+                        </h5>
+                        <span class="badge bg-secondary bg-opacity-10 text-dark fw-semibold">
+                            @resumen.MesNombre @resumen.Anio
+                        </span>
+                    </div>
+                    <div class="card-body chart-daily-wrapper">
+                        <canvas id="chartDailyBar"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Gráfica: Línea - Evolución Mensual del Gasto Total -->
         <div class="row mt-4">
             <div class="col-12">
@@ -366,6 +385,15 @@
             var pct = totalPresupuesto > 0 ? (double)(totalGastado / totalPresupuesto * 100) : 0;
             await JS.InvokeVoidAsync("renderGaugeChart", "chartGauge", pct);
         }
+        
+        // Render Gastos por Día
+        if (resumen.GastosPorDia.Any())
+        {
+            var dailyLabels = resumen.GastosPorDia.Select(g => $"Día {g.Dia}").ToArray();
+            var dailyData = resumen.GastosPorDia.Select(g => (double)g.Total).ToArray();
+            await JS.InvokeVoidAsync("renderDailyBarChart", "chartDailyBar", dailyLabels, dailyData);
+        }
+
         if (evolLabels.Any() && evolDatasets.Any())
             await JS.InvokeVoidAsync("renderStackedBarChart", "chartStackedEvolucion", evolLabels.ToArray(), evolDatasets.ToArray());
         if (evolLabels.Any() && lineData.Any())
@@ -609,7 +637,8 @@
     /* ===== Charts wrappers ===== */
     .chart-hbar-wrapper,
     .chart-stacked-wrapper,
-    .chart-line-wrapper {
+    .chart-line-wrapper,
+    .chart-daily-wrapper {
         position: relative;
         height: 380px;
     }

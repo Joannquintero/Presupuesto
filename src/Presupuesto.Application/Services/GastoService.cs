@@ -178,6 +178,15 @@ public class GastoService : IGastoService
                     Cantidad = group.Count()
                 })
                 .OrderByDescending(x => x.Total)
+                .ToList(),
+            GastosPorDia = gastosMes
+                .GroupBy(g => g.Fecha.Day)
+                .Select(group => new GastoPorDiaDto
+                {
+                    Dia = group.Key,
+                    Total = (decimal)group.Sum(g => (double)g.Monto)
+                })
+                .OrderBy(x => x.Dia)
                 .ToList()
         };
 

@@ -12,6 +12,13 @@ public class ResumenMensualDto
     public string MesNombre { get; set; } = string.Empty;
     public decimal TotalMes { get; set; }
     public List<GastoPorCategoriaDto> GastosPorCategoria { get; set; } = new();
+    public List<GastoPorDiaDto> GastosPorDia { get; set; } = new();
+}
+
+public class GastoPorDiaDto
+{
+    public int Dia { get; set; }
+    public decimal Total { get; set; }
 }
 
 public class GastoPorCategoriaDto
