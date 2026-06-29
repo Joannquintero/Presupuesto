@@ -129,11 +129,7 @@ En los gastos fijos y recurrentes, no se debe validar que exista un presupuesto 
 Solo es de caracter informativo, para tener en cuenta en el registro de gastos
 
 ----------------------------------------
-En nuevo gasto, se debe implementar validacion para que se calcule el valor maximo a gastar por dia de acuerdo al saldo disponible en el presupuesto mensual para la categoria correspondiente al gasto y la fecha del gasto.
-
-El valor maximo a gastar por dia se calcula de la siguiente manera:
-
-Monto disponible en el presupuesto mensual para la categoria correspondiente al gasto / Numero de dias en el mes - (Gastos fijos y recurrentes del mes para la categoria correspondiente al gasto / Numero de dias en el mes)
+En nuevo gasto, se debe implementar validacion para que se calcule el valor maximo a gastar por dia de acuerdo al saldo disponible en el presupuesto mensual para la categoria correspondiente al gasto y los dias restantes del mes a partir de la fecha del gasto.
 
 Los gastos fijos y recurrentes se deben calcular de acuerdo a la fecha del gasto y la categoria correspondiente al gasto.   
 Si excede, se debe mostrar un mensaje de error, pero permitir guardar el gasto.
