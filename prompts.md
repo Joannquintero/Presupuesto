@@ -116,7 +116,7 @@ Al crear o editar un gasto, realizar los siguientes ajustes:
 4. Se debe mostrar el monto disponible en el presupuesto mensual para la categoria correspondiente al crear o editar un gasto de acuerdo a la fecha del gasto y la categoria seleccionada.  
 
 ----------------------------------------
-Crear un nuevo componente (CRUD) que permita registrar los gastos fijos y recurrentes. Debe tener los siguientes campos:
+Crear un nuevo componente (CRUD) que permita registrar los gastos fijos. Debe tener los siguientes campos:
 
 - Concepto (Concepto) - Texto opcional
 - Monto (1000) - Decimal
@@ -125,8 +125,9 @@ Crear un nuevo componente (CRUD) que permita registrar los gastos fijos y recurr
 - Categoria (Categoria) - Combobox
 - Activo (Activo) - Checkbox
 
-En los gastos fijos y recurrentes, no se debe validar que exista un presupuesto mensual para el mismo año y mes.
 Solo es de caracter informativo, para tener en cuenta en el registro de gastos
+
+Si en crear o editar gastos, en la categoria se selecciona "Gasto Fijo", se debe mostrar el combo box con las opciones "Fijo" y "Recurrente" y permitir seleccionar una de ellas, y ocultar el campo "Descripcion". El valor seleccionado en el combobox se debe guardar en la base de datos como texto en el campo "Descripcion".
 
 ----------------------------------------
 En nuevo gasto, se debe implementar validacion para que se calcule el valor maximo a gastar por dia de acuerdo al saldo disponible en el presupuesto mensual para la categoria correspondiente al gasto y los dias restantes del mes a partir de la fecha del gasto.
