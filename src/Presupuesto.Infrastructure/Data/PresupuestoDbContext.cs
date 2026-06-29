@@ -103,12 +103,9 @@ public class PresupuestoDbContext : DbContext
             entity.HasKey(l => l.Id);
             entity.Property(l => l.Concepto).HasMaxLength(200);
             entity.Property(l => l.Monto).HasColumnType("decimal(18,2)");
-            entity.Property(l => l.Fecha).IsRequired();
-
-            entity.HasOne(l => l.CategoriaPresupuesto)
-                .WithMany()
-                .HasForeignKey(l => l.CategoriaPresupuestoId)
-                .OnDelete(DeleteBehavior.Restrict);
+            entity.Property(l => l.Fecha).IsRequired(false);
+            entity.Property(l => l.Categoria).HasConversion<int>();
+            entity.Property(l => l.Prioridad).IsRequired();
         });
 
         // Seed de datos iniciales

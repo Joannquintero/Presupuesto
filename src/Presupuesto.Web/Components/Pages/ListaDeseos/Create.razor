@@ -1,0 +1,163 @@
+@page "/listadeseos/crear"
+@using Presupuesto.Application.DTOs
+@using Presupuesto.Application.Services
+@using Presupuesto.Domain.Enums
+@inject IListaDeseoService ListaDeseoService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Nuevo Deseo - Control de Presupuesto</PageTitle>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white rounded-top-4 py-3">
+                    <h4 class="mb-0">
+                        <i class="bi bi-star me-2"></i>Nuevo Deseo
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <EditForm Model="deseo" OnValidSubmit="Guardar" FormName="CreateListaDeseo">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Concepto</label>
+                            <InputText class="form-control" @bind-Value="deseo.Concepto" placeholder="Ej: Audífonos Bluetooth" />
+                            <ValidationMessage For="() => deseo.Concepto" class="text-danger small" />
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Monto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light fw-bold">$</span>
+                                    <input type="text" class="form-control fw-bold" 
+                                           inputmode="numeric"
+                                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                           value="@montoFormateado"
+                                           @oninput="OnMontoInput"
+                                           placeholder="0" />
+                                </div>
+                                <ValidationMessage For="() => deseo.Monto" class="text-danger small" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Fecha Estimada
+                                    <span class="text-muted fw-normal fs-small">(Opcional)</span>
+                                </label>
+                                <InputDate class="form-control" @bind-Value="deseo.Fecha" />
+                                <ValidationMessage For="() => deseo.Fecha" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Categoría</label>
+                                <InputSelect class="form-select" @bind-Value="deseo.Categoria">
+                                    @foreach (CategoriaDeseo cat in Enum.GetValues<CategoriaDeseo>())
+                                    {
+                                        <option value="@cat">@cat</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="() => deseo.Categoria" class="text-danger small" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Prioridad <span class="text-muted fw-normal">(1-10)</span></label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="range" class="form-range flex-grow-1" min="1" max="10" 
+                                           value="@deseo.Prioridad" @oninput="OnPrioridadInput" />
+                                    <span class="badge rounded-pill px-3 py-2 @GetPrioridadClass(deseo.Prioridad)" style="min-width: 36px;">
+                                        @deseo.Prioridad
+                                    </span>
+                                </div>
+                                <ValidationMessage For="() => deseo.Prioridad" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        <div class="mb-4 form-check form-switch">
+                            <InputCheckbox class="form-check-input" id="activoCheck" @bind-Value="deseo.Activo" />
+                            <label class="form-check-label fw-semibold" for="activoCheck">Activo</label>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/listadeseos" class="btn btn-light rounded-pill px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4" disabled="@guardando">
+                                @if (guardando)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Guardando...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-save me-2"></i><span>Guardar</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateUpdateListaDeseoDto deseo = new();
+    private bool guardando = false;
+    private string montoFormateado = "0";
+
+    protected override void OnInitialized()
+    {
+        deseo.Activo = true;
+        deseo.Prioridad = 5;
+        deseo.Categoria = CategoriaDeseo.Otros;
+    }
+
+    private void OnMontoInput(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString() ?? string.Empty;
+        var soloNumeros = new string(val.Where(char.IsDigit).ToArray());
+
+        if (decimal.TryParse(soloNumeros, out var monto))
+        {
+            deseo.Monto = monto;
+            montoFormateado = monto.ToString("N0", new System.Globalization.CultureInfo("es-CL"));
+        }
+        else
+        {
+            deseo.Monto = 0;
+            montoFormateado = "0";
+        }
+    }
+
+    private void OnPrioridadInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var val))
+        {
+            deseo.Prioridad = val;
+        }
+    }
+
+    private async Task Guardar()
+    {
+        guardando = true;
+        try
+        {
+            await ListaDeseoService.CreateAsync(deseo);
+            Navigation.NavigateTo("/listadeseos");
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private string GetPrioridadClass(int prioridad) => prioridad switch
+    {
+        >= 9 => "bg-danger text-white",
+        >= 7 => "bg-warning text-dark",
+        >= 5 => "bg-info text-dark",
+        >= 3 => "bg-secondary text-white",
+        _ => "bg-light text-dark border"
+    };
+}

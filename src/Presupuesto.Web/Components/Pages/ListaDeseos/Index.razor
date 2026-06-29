@@ -1,0 +1,192 @@
+@page "/listadeseos"
+@using Presupuesto.Application.DTOs
+@using Presupuesto.Application.Services
+@using Presupuesto.Domain.Enums
+@inject IListaDeseoService ListaDeseoService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Lista de Deseos - Control de Presupuesto</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0 fw-bold">Lista de Deseos</h2>
+            <p class="text-muted mb-0">Gestiona tus metas de compras</p>
+        </div>
+        <a href="/listadeseos/crear" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i>Nuevo Deseo
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-0">
+            @if (cargando)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else if (!deseos.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-star fs-1 d-block mb-3"></i>
+                    <h5>No hay deseos registrados</h5>
+                    <p>Agrega artículos o servicios que te gustaría adquirir.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4 py-3">Concepto</th>
+                                <th class="py-3">Monto</th>
+                                <th class="py-3">Fecha Estimada</th>
+                                <th class="py-3">Categoría</th>
+                                <th class="py-3 text-center">Prioridad</th>
+                                <th class="py-3 text-center">Estado</th>
+                                <th class="px-4 py-3 text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var deseo in deseos)
+                            {
+                                <tr>
+                                    <td class="px-4 fw-medium">@deseo.Concepto</td>
+                                    <td>@deseo.Monto.ToString("C0")</td>
+                                    <td>@(deseo.Fecha.HasValue ? deseo.Fecha.Value.ToShortDateString() : "—")</td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2">
+                                            @deseo.Categoria
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill px-3 py-2 @GetPrioridadClass(deseo.Prioridad)" title="Prioridad @deseo.Prioridad">
+                                            @deseo.Prioridad
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (deseo.Activo)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">Inactivo</span>
+                                        }
+                                    </td>
+                                    <td class="px-4 text-end">
+                                        <div class="btn-group">
+                                            <a href="/listadeseos/editar/@deseo.Id" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(deseo)" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (deseoAEliminar != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-bottom-0 pt-4 pb-0 px-4">
+                    <h5 class="modal-title fw-bold">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" @onclick="CancelarEliminar"></button>
+                </div>
+                <div class="modal-body px-4 py-3">
+                    <p class="mb-0">¿Estás seguro de que deseas eliminar <strong>@deseoAEliminar.Concepto</strong>?</p>
+                </div>
+                <div class="modal-footer border-top-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" @onclick="CancelarEliminar">Cancelar</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" @onclick="EliminarDeseo">
+                        @if (eliminando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Eliminando...</span>
+                        }
+                        else
+                        {
+                            <span>Eliminar</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private IEnumerable<ListaDeseoDto> deseos = new List<ListaDeseoDto>();
+    private bool cargando = true;
+    private ListaDeseoDto? deseoAEliminar;
+    private bool eliminando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDeseos();
+    }
+
+    private async Task CargarDeseos()
+    {
+        try
+        {
+            deseos = await ListaDeseoService.GetAllAsync();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void ConfirmarEliminar(ListaDeseoDto deseo)
+    {
+        deseoAEliminar = deseo;
+    }
+
+    private void CancelarEliminar()
+    {
+        deseoAEliminar = null;
+    }
+
+    private async Task EliminarDeseo()
+    {
+        if (deseoAEliminar != null)
+        {
+            eliminando = true;
+            try
+            {
+                await ListaDeseoService.DeleteAsync(deseoAEliminar.Id);
+                await CargarDeseos();
+                deseoAEliminar = null;
+            }
+            finally
+            {
+                eliminando = false;
+            }
+        }
+    }
+
+    private string GetPrioridadClass(int prioridad) => prioridad switch
+    {
+        >= 9 => "bg-danger text-white",
+        >= 7 => "bg-warning text-dark",
+        >= 5 => "bg-info text-dark",
+        >= 3 => "bg-secondary text-white",
+        _ => "bg-light text-dark border"
+    };
+}

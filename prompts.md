@@ -141,9 +141,12 @@ Crea un nuevo componente (CRUD) para lista de deseos. Debe tener los siguientes 
 
 - Concepto (Concepto) - Texto opcional
 - Monto (1000) - Decimal
-- Fecha (Fecha) - Fecha
+- Fecha estimada de compra (Fecha) - Fecha (opcional)
 - Categoria (Categoria) - Combobox (tecnologia, personales, salud, hogar, compras, suscripciones, transporte, alimentos, servicios, otros)
 - Prioridad (1-10) - Numero 
 - Activo (Activo) - Checkbox
 
 La lista de deseos se debe guardar en la base de datos como una tabla separada de los gastos.    
+
+----------------------------------------
+En crear o editar gasto, agregar dos botones para agregar o quitar valor al campo monto con incrementos/decrementos de 1000 en 1000. Se debe validar que el monto no sea negativo.    
