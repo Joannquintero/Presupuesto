@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Presupuesto.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using Presupuesto.Infrastructure.Data;
 namespace Presupuesto.Infrastructure.Migrations
 {
     [DbContext(typeof(PresupuestoDbContext))]
-    partial class PresupuestoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260629033241_UpdateCategoriaFondoToGastosFijos")]
+    partial class UpdateCategoriaFondoToGastosFijos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

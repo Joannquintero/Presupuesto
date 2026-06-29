@@ -29,7 +29,7 @@ public class GastoService : IGastoService
             .ToListAsync();
     }
 
-    public async Task<List<GastoDto>> GetByFilterAsync(int? anio, int? mes, Categoria? subCategoria)
+    public async Task<List<GastoDto>> GetByFilterAsync(int? anio, int? mes, Categoria? subCategoria, DateTime? fechaInicio = null, DateTime? fechaFin = null)
     {
         var query = _gastos.Include(g => g.CategoriaPresupuesto).AsQueryable();
 
@@ -41,6 +41,12 @@ public class GastoService : IGastoService
 
         if (subCategoria.HasValue)
             query = query.Where(g => g.SubCategoria == subCategoria.Value);
+
+        if (fechaInicio.HasValue)
+            query = query.Where(g => g.Fecha >= fechaInicio.Value);
+
+        if (fechaFin.HasValue)
+            query = query.Where(g => g.Fecha <= fechaFin.Value);
 
         return await query
             .OrderByDescending(g => g.Fecha)

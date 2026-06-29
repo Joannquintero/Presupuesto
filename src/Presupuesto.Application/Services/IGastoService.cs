@@ -9,7 +9,7 @@ namespace Presupuesto.Application.Services;
 public interface IGastoService
 {
     Task<List<GastoDto>> GetAllAsync();
-    Task<List<GastoDto>> GetByFilterAsync(int? anio, int? mes, Categoria? categoria);
+    Task<List<GastoDto>> GetByFilterAsync(int? anio, int? mes, Categoria? categoria, DateTime? fechaInicio = null, DateTime? fechaFin = null);
     Task<GastoDto?> GetByIdAsync(int id);
     Task<GastoDto> CreateAsync(CreateUpdateGastoDto dto);
     Task<GastoDto?> UpdateAsync(int id, CreateUpdateGastoDto dto);
