@@ -325,7 +325,7 @@
     private bool loading = true;
     private int selectedAnio = DateTime.Now.Year;
     private int selectedMes = DateTime.Now.Month;
-    private bool chartsRendered = false;
+    private bool pendingChartRender = false;
 
     // Evolución mensual (Stacked y Línea)
     private List<string> evolLabels = new();
@@ -346,30 +346,36 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (resumen is not null && resumen.GastosPorCategoria.Any() && !chartsRendered)
+        // Render charts after the DOM has been updated with the canvas elements
+        if (pendingChartRender && resumen is not null && resumen.GastosPorCategoria.Any())
         {
-            chartsRendered = true;
-            await RenderChart();
-            if (presupuestoMensual is not null)
-            {
-                await RenderHorizontalBarChart();
-                
-                var totalPresupuesto = presupuestoMensual.Distribuciones.Sum(d => d.Monto);
-                var totalGastado = resumen.TotalMes; // ya lo tenemos en el objeto principal
-                var pct = totalPresupuesto > 0 ? (double)(totalGastado / totalPresupuesto * 100) : 0;
-                await JS.InvokeVoidAsync("renderGaugeChart", "chartGauge", pct);
-            }
-            if (evolLabels.Any() && evolDatasets.Any())
-                await JS.InvokeVoidAsync("renderStackedBarChart", "chartStackedEvolucion", evolLabels.ToArray(), evolDatasets.ToArray());
-            if (evolLabels.Any() && lineData.Any())
-                await JS.InvokeVoidAsync("renderLineChart", "chartLineEvolucion", evolLabels.ToArray(), lineData.ToArray());
+            pendingChartRender = false;
+            await RenderAllCharts();
         }
+    }
+
+    private async Task RenderAllCharts()
+    {
+        await RenderChart();
+        if (presupuestoMensual is not null)
+        {
+            await RenderHorizontalBarChart();
+
+            var totalPresupuesto = presupuestoMensual.Distribuciones.Sum(d => d.Monto);
+            var totalGastado = resumen!.TotalMes;
+            var pct = totalPresupuesto > 0 ? (double)(totalGastado / totalPresupuesto * 100) : 0;
+            await JS.InvokeVoidAsync("renderGaugeChart", "chartGauge", pct);
+        }
+        if (evolLabels.Any() && evolDatasets.Any())
+            await JS.InvokeVoidAsync("renderStackedBarChart", "chartStackedEvolucion", evolLabels.ToArray(), evolDatasets.ToArray());
+        if (evolLabels.Any() && lineData.Any())
+            await JS.InvokeVoidAsync("renderLineChart", "chartLineEvolucion", evolLabels.ToArray(), lineData.ToArray());
     }
 
     private async Task CargarResumen()
     {
         loading = true;
-        chartsRendered = false;
+        pendingChartRender = false;
         try
         {
             resumen = await GastoService.GetResumenMensualAsync(selectedAnio, selectedMes);
@@ -430,6 +436,8 @@
         finally
         {
             loading = false;
+            // Signal that charts need rendering after the next DOM update
+            pendingChartRender = true;
         }
     }
 
