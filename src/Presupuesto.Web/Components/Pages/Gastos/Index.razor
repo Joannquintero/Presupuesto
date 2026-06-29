@@ -27,7 +27,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Año</label>
                     <select class="form-select" @bind="filtroAnio" @bind:after="FiltrarGastos">
                         <option value="">Todos</option>
@@ -37,7 +37,7 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Mes</label>
                     <select class="form-select" @bind="filtroMes" @bind:after="FiltrarGastos">
                         <option value="">Todos</option>
@@ -47,7 +47,7 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Categoría</label>
                     <select class="form-select" @bind="filtroCategoria" @bind:after="FiltrarGastos">
                         <option value="">Todas</option>
@@ -57,7 +57,15 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" @bind="filtroFechaInicio" @bind:after="FiltrarGastos" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" @bind="filtroFechaFin" @bind:after="FiltrarGastos" />
+                </div>
+                <div class="col-md-2">
                     <button class="btn btn-outline-secondary w-100" @onclick="LimpiarFiltros">
                         <i class="bi bi-x-circle me-1"></i>Limpiar
                     </button>
@@ -116,6 +124,8 @@
     private string? filtroAnio;
     private string? filtroMes;
     private string? filtroCategoria;
+    private DateTime? filtroFechaInicio;
+    private DateTime? filtroFechaFin;
 
     private readonly Dictionary<int, string> meses = new()
     {
@@ -141,7 +151,7 @@
             int? mes = string.IsNullOrEmpty(filtroMes) ? null : int.Parse(filtroMes);
             Categoria? subCategoria = string.IsNullOrEmpty(filtroCategoria) ? null : (Categoria)int.Parse(filtroCategoria);
 
-            gastos = await GastoService.GetByFilterAsync(anio, mes, subCategoria);
+            gastos = await GastoService.GetByFilterAsync(anio, mes, subCategoria, filtroFechaInicio, filtroFechaFin);
         }
         catch (Exception ex)
         {
@@ -158,6 +168,8 @@
         filtroAnio = null;
         filtroMes = null;
         filtroCategoria = null;
+        filtroFechaInicio = null;
+        filtroFechaFin = null;
         await FiltrarGastos();
     }
 
