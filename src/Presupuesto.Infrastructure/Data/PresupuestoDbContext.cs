@@ -116,9 +116,9 @@ public class PresupuestoDbContext : DbContext
     {
         // Seed Categorías Presupuesto
         modelBuilder.Entity<CategoriaPresupuesto>().HasData(
-            new CategoriaPresupuesto { Id = 1, Nombre = "Obligaciones", EsSistema = true },
+            new CategoriaPresupuesto { Id = 1, Nombre = "Gastos Básicos", EsSistema = true },
             new CategoriaPresupuesto { Id = 2, Nombre = "Gastos Personales", EsSistema = false },
-            new CategoriaPresupuesto { Id = 3, Nombre = "Metas y Ahorro", EsSistema = false },
+            new CategoriaPresupuesto { Id = 3, Nombre = "Inversiones", EsSistema = false },
             new CategoriaPresupuesto { Id = 4, Nombre = "Gastos Fijos", EsSistema = false },
             new CategoriaPresupuesto { Id = 5, Nombre = "Otros", EsSistema = false }
         );
