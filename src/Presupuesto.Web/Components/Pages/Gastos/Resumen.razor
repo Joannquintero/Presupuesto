@@ -4,6 +4,7 @@
 @using Presupuesto.Domain.Enums
 @inject IGastoService GastoService
 @inject IPresupuestoMensualService PresupuestoService
+@inject ICategoriaPresupuestoService CategoriaService
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
@@ -346,6 +347,37 @@
     private int selectedMes = DateTime.Now.Month;
     private bool pendingChartRender = false;
 
+    // Mapa centralizado: nombre de categoría → índice único en la paleta
+    private Dictionary<string, int> categoriaColorMap = new();
+
+    // Paleta maestra de 12 colores suaves y profesionales
+    private static readonly string[] MasterColors = {
+        "#4A90E2", // Azul suave
+        "#E27D60", // Coral apagado
+        "#F3B562", // Dorado suave
+        "#C38D9E", // Rosa polvoriento
+        "#41B3A3", // Verde menta
+        "#85CDCB", // Azul claro
+        "#E8A87C", // Melocotón
+        "#F06060", // Rojo apagado
+        "#5C8374", // Verde salvia
+        "#9B786F", // Malva
+        "#7E909A", // Gris azulado
+        "#A593E0", // Púrpura suave
+    };
+
+    private static readonly string[] MasterBadgeClasses = {
+        "badge-c1", "badge-c2", "badge-c3", "badge-c4", 
+        "badge-c5", "badge-c6", "badge-c7", "badge-c8", 
+        "badge-c9", "badge-c10", "badge-c11", "badge-c12"
+    };
+
+    private static readonly string[] MasterBarClasses = {
+        "bar-c1", "bar-c2", "bar-c3", "bar-c4", 
+        "bar-c5", "bar-c6", "bar-c7", "bar-c8", 
+        "bar-c9", "bar-c10", "bar-c11", "bar-c12"
+    };
+
     // Evolución mensual (Stacked y Línea)
     private List<string> evolLabels = new();
     private List<object> evolDatasets = new();
@@ -432,29 +464,40 @@
                 lineData.Add((double)r.TotalMes);
             }
             
-            // Extraer todas las categorías únicas usadas en estos 6 meses
-            var todasCategorias = last6MonthsResumen
-                .SelectMany(r => r.GastosPorCategoria.Select(g => g.CategoriaNombre))
-                .Distinct()
-                .ToList();
+            var todasCategoriasDb = await CategoriaService.GetAllAsync();
+            
+            // Construir mapa centralizado: categoría → índice secuencial único
+            categoriaColorMap.Clear();
+            int colorIdx = 0;
+            foreach (var cat in todasCategoriasDb.OrderBy(c => c.Id))
+            {
+                if (cat.Nombre == "Obligaciones") continue;
+                categoriaColorMap[cat.Nombre] = colorIdx % MasterColors.Length;
+                colorIdx++;
+            }
 
-            // Colores por índice (ampliado en app.razor, pero mandaremos fallback desde aquí si es necesario).
-            // Construiremos el objeto para ChartJs.
-            foreach (var catName in todasCategorias)
+            // Construir datasets para gráfica apilada (con color desde C#)
+            foreach (var catName in todasCategoriasDb.Select(c => c.Nombre))
             {
                 var montosMensuales = new List<double>();
+                bool hasData = false;
                 
                 foreach (var rMensual in last6MonthsResumen)
                 {
                     var recordCat = rMensual.GastosPorCategoria.FirstOrDefault(x => x.CategoriaNombre == catName);
-                    montosMensuales.Add(recordCat is not null ? (double)recordCat.Total : 0.0);
+                    double totalCat = recordCat is not null ? (double)recordCat.Total : 0.0;
+                    montosMensuales.Add(totalCat);
+                    if (totalCat > 0) hasData = true;
                 }
                 
-                // Objeto anónimo para el runtime JS.
-                evolDatasets.Add(new {
-                    label = catName,
-                    data = montosMensuales.ToArray()
-                });
+                if (hasData)
+                {
+                    evolDatasets.Add(new {
+                        label = catName,
+                        data = montosMensuales.ToArray(),
+                        color = GetCategoriaColor(catName)
+                    });
+                }
             }
         }
         catch (Exception ex)
@@ -498,41 +541,28 @@
         await JS.InvokeVoidAsync("renderHorizontalBarChart", "chartHBarras", labels, budget, spent, colors);
     }
 
-    private int GetColorIndex(string seedName)
-    {
-        int hash = 0;
-        for (int i = 0; i < seedName.Length; i++)
-        {
-            hash = seedName[i] + ((hash << 5) - hash);
-        }
-        return Math.Abs(hash);
-    }
-
     private string GetCategoriaBadgeClass(string nombre)
     {
         if (nombre == "Obligaciones") return "bg-success";
-        
-        string[] badges = { "bg-primary", "bg-info text-dark", "bg-warning text-dark", "bg-danger", "bg-secondary", "bg-dark" };
-        var index = GetColorIndex(nombre) % badges.Length;
-        return badges[index];
+        if (categoriaColorMap.TryGetValue(nombre, out var idx))
+            return MasterBadgeClasses[idx];
+        return "bg-secondary"; // fallback
     }
 
     private string GetCategoriaColor(string nombre)
     {
-        if (nombre == "Obligaciones") return "#198754"; // bg-success
-
-        string[] colors = { "#0d6efd", "#0dcaf0", "#ffc107", "#dc3545", "#6c757d", "#212529" };
-        var index = GetColorIndex(nombre) % colors.Length;
-        return colors[index];
+        if (nombre == "Obligaciones") return "#5C8374";
+        if (categoriaColorMap.TryGetValue(nombre, out var idx))
+            return MasterColors[idx];
+        return "#6c757d"; // fallback
     }
 
     private string GetCategoriaBarClass(string nombre)
     {
-        if (nombre == "Obligaciones") return "bar-success"; // Personalizado
-
-        string[] bars = { "bar-primary", "bar-info", "bar-warning", "bar-danger", "bar-secondary", "bar-dark" };
-        var index = GetColorIndex(nombre) % bars.Length;
-        return bars[index];
+        if (nombre == "Obligaciones") return "bar-success";
+        if (categoriaColorMap.TryGetValue(nombre, out var idx))
+            return MasterBarClasses[idx];
+        return "bar-primary"; // fallback
     }
 }
 
@@ -622,11 +652,22 @@
         transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    .bar-success  { background: #198754; }
-    .bar-primary  { background: #0d6efd; }
-    .bar-info     { background: #0dcaf0; }
-    .bar-warning  { background: #ffc107; }
-    .bar-secondary { background: #6c757d; }
+    .bar-success  { background: #5C8374; } /* Adjusted green */
+    
+    .bar-c1 { background: #4A90E2; }
+    .bar-c2 { background: #E27D60; }
+    .bar-c3 { background: #F3B562; }
+    .bar-c4 { background: #C38D9E; }
+    .bar-c5 { background: #41B3A3; }
+    .bar-c6 { background: #85CDCB; }
+    .bar-c7 { background: #E8A87C; }
+    .bar-c8 { background: #F06060; }
+    .bar-c9 { background: #5C8374; }
+    .bar-c10 { background: #9B786F; }
+    .bar-c11 { background: #7E909A; }
+    .bar-c12 { background: #A593E0; }
+
+    /* ===== Custom badge colors (now mostly global, but keep fallback if needed) ===== */
 
     /* ===== Total row ===== */
     .desglose-card-total-row {

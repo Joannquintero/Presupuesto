@@ -49,3 +49,18 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+/* ===== Soft professional category badge colors (global) ===== */
+.badge-c1  { background-color: #4A90E2; color: #fff; }
+.badge-c2  { background-color: #E27D60; color: #fff; }
+.badge-c3  { background-color: #F3B562; color: #212529; }
+.badge-c4  { background-color: #C38D9E; color: #fff; }
+.badge-c5  { background-color: #41B3A3; color: #fff; }
+.badge-c6  { background-color: #85CDCB; color: #212529; }
+.badge-c7  { background-color: #E8A87C; color: #212529; }
+.badge-c8  { background-color: #F06060; color: #fff; }
+.badge-c9  { background-color: #5C8374; color: #fff; }
+.badge-c10 { background-color: #9B786F; color: #fff; }
+.badge-c11 { background-color: #7E909A; color: #fff; }
+.badge-c12 { background-color: #A593E0; color: #fff; }
+.badge-success { background-color: #5C8374; color: #fff; } /* Obligations fallback */

@@ -47,6 +47,8 @@
                                 <label class="form-label fw-semibold">Frecuencia</label>
                                 <InputSelect class="form-select" @bind-Value="gasto.Frecuencia">
                                     <option value="@FrecuenciaGasto.Mensual">Mensual</option>
+                                    <option value="@FrecuenciaGasto.Trimestral">Trimestral</option>
+                                    <option value="@FrecuenciaGasto.Semestral">Semestral</option>
                                     <option value="@FrecuenciaGasto.Anual">Anual</option>
                                 </InputSelect>
                                 <ValidationMessage For="() => gasto.Frecuencia" class="text-danger small" />

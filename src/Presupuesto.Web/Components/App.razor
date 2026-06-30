@@ -13,7 +13,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     
-    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="app.css?v=2" />
     <link rel="stylesheet" href="Presupuesto.Web.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet />
@@ -190,26 +190,10 @@
                 stackedChartInstance.destroy();
             }
 
-            // Mapearemos los colores para que cada categoría tenga un color consistente.
-            // Usamos una paleta fresca y extensa de colores vibrantes y modernos.
-            const generateColor = (seedName) => {
-                const colors = [
-                    '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236', 
-                    '#166a8f', '#00a950', '#58595b', '#8549ba', '#ffb300',
-                    '#c51162', '#3f51b5', '#4caf50', '#009688', '#e91e63'
-                ];
-                let hash = 0;
-                for (let i = 0; i < seedName.length; i++) {
-                    hash = seedName.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                const index = Math.abs(hash % colors.length);
-                return colors[index];
-            };
-
             const chartJsDatasets = rawDatasets.map(d => ({
                 label: d.label,
                 data: d.data,
-                backgroundColor: generateColor(d.label),
+                backgroundColor: d.color,
                 borderWidth: 1,
                 borderRadius: 4,
                 borderColor: 'rgba(255,255,255, 0.5)'

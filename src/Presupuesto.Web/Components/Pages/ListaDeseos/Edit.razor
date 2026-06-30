@@ -66,7 +66,7 @@
                                         Fecha Estimada
                                         <span class="text-muted fw-normal fs-small">(Opcional)</span>
                                     </label>
-                                    <InputDate class="form-control" @bind-Value="deseo.Fecha" />
+                                    <InputDate class="form-control" @bind-Value="deseo.Fecha" onclick="try { this.showPicker(); } catch(e) {}" />
                                     <ValidationMessage For="() => deseo.Fecha" class="text-danger small" />
                                 </div>
                             </div>

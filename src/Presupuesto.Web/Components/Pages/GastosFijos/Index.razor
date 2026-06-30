@@ -59,7 +59,7 @@
                                     <td class="px-4 fw-medium">@gasto.Concepto</td>
                                     <td>@gasto.Monto.ToString("C2")</td>
                                     <td>
-                                        <span class="badge @(gasto.Frecuencia == FrecuenciaGasto.Mensual ? "bg-info" : "bg-secondary")">
+                                        <span class="badge @GetFrecuenciaBadgeClass(gasto.Frecuencia)">
                                             @gasto.Frecuencia
                                         </span>
                                     </td>
@@ -175,5 +175,17 @@
                 eliminando = false;
             }
         }
+    }
+
+    private string GetFrecuenciaBadgeClass(FrecuenciaGasto freq)
+    {
+        return freq switch
+        {
+            FrecuenciaGasto.Mensual => "bg-info text-dark",
+            FrecuenciaGasto.Trimestral => "bg-warning text-dark",
+            FrecuenciaGasto.Semestral => "bg-primary",
+            FrecuenciaGasto.Anual => "bg-secondary",
+            _ => "bg-secondary"
+        };
     }
 }

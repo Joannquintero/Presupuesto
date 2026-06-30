@@ -4,6 +4,7 @@
 @using Presupuesto.Domain.Enums
 @using Presupuesto.Web.Components.Shared
 @inject IGastoService GastoService
+@inject ICategoriaPresupuestoService CategoriaService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -87,7 +88,7 @@
     {
         <div class="card shadow-sm">
             <div class="card-body">
-                <GastosTable Gastos="gastos" OnEdit="EditarGasto" OnDelete="EliminarGasto" />
+                <GastosTable Gastos="gastos" ColorMap="categoriaColorMap" OnEdit="EditarGasto" OnDelete="EliminarGasto" />
             </div>
         </div>
     }
@@ -134,6 +135,8 @@
         { 9, "Septiembre" }, { 10, "Octubre" }, { 11, "Noviembre" }, { 12, "Diciembre" }
     };
 
+    private Dictionary<string, int> categoriaColorMap = new();
+
     protected override async Task OnInitializedAsync()
     {
         // Establecer mes y año actual por defecto
@@ -144,7 +147,29 @@
         filtroFechaInicio = DateTime.Today;
         filtroFechaFin = DateTime.Today;
 
+        await ConstruirMapaColores();
         await FiltrarGastos();
+    }
+
+    private async Task ConstruirMapaColores()
+    {
+        try
+        {
+            var todasCategoriasDb = await CategoriaService.GetAllAsync();
+            categoriaColorMap.Clear();
+            int colorIdx = 0;
+            // Ordenar por ID para garantizar siempre el mismo color para la misma categoría
+            foreach (var cat in todasCategoriasDb.OrderBy(c => c.Id))
+            {
+                if (cat.Nombre == "Obligaciones") continue;
+                categoriaColorMap[cat.Nombre] = colorIdx;
+                colorIdx++;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar categorías para colores: {ex.Message}");
+        }
     }
 
     private async Task FiltrarGastos()

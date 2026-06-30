@@ -108,25 +108,23 @@ else
     [Parameter]
     public EventCallback<int> OnDelete { get; set; }
 
-    private int GetColorIndex(string seedName)
-    {
-        if (string.IsNullOrEmpty(seedName)) return 0;
-        int hash = 0;
-        for (int i = 0; i < seedName.Length; i++)
-        {
-            hash = seedName[i] + ((hash << 5) - hash);
-        }
-        return Math.Abs(hash);
-    }
+    // Paleta maestra alineada con Resumen.razor
+    private static readonly string[] MasterBadgeClasses = {
+        "badge-c1", "badge-c2", "badge-c3", "badge-c4", 
+        "badge-c5", "badge-c6", "badge-c7", "badge-c8", 
+        "badge-c9", "badge-c10", "badge-c11", "badge-c12"
+    };
+
+    [Parameter]
+    public Dictionary<string, int> ColorMap { get; set; } = new();
 
     private string GetCategoriaBadgeClass(string? nombre)
     {
         if (string.IsNullOrEmpty(nombre)) return "bg-secondary";
-        if (nombre == "Obligaciones") return "bg-success";
-        
-        string[] badges = { "bg-primary", "bg-info text-dark", "bg-warning text-dark", "bg-danger", "bg-secondary", "bg-dark" };
-        var index = GetColorIndex(nombre) % badges.Length;
-        return badges[index];
+        if (nombre == "Obligaciones") return "badge-success";
+        if (ColorMap.TryGetValue(nombre, out var idx))
+            return MasterBadgeClasses[idx % MasterBadgeClasses.Length];
+        return "bg-secondary";
     }
 }
 
