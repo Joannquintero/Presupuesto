@@ -45,7 +45,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Fecha</label>
-                                <InputDate class="form-control" @bind-Value="gasto.Fecha" @bind-Value:after="OnFechaChanged" />
+                                <InputDate class="form-control" @bind-Value="gasto.Fecha" @bind-Value:after="OnFechaChanged" onclick="try { this.showPicker(); } catch(e) {}" />
                                 <ValidationMessage For="() => gasto.Fecha" class="text-danger small" />
                             </div>
 
