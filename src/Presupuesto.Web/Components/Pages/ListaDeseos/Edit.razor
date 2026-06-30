@@ -56,7 +56,7 @@
                                                inputmode="numeric"
                                                onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                                value="@montoFormateado"
-                                               @oninput="OnMontoInput"
+                                               @onchange="OnMontoInput"
                                                placeholder="0" />
                                     </div>
                                     <ValidationMessage For="() => deseo.Monto" class="text-danger small" />
