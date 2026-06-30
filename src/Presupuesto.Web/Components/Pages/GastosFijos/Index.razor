@@ -91,7 +91,7 @@
                         <tfoot class="table-light">
                             <tr>
                                 <td class="px-4 fw-bold text-end">Total:</td>
-                                <td class="fw-bold text-success">@gastosFijos.Sum(g => g.Monto).ToString("C2")</td>
+                                <td class="fw-bold text-success">@gastosFijos.Where(g => g.Activo).Sum(g => g.Monto).ToString("C2")</td>
                                 <td colspan="5"></td>
                             </tr>
                         </tfoot>
