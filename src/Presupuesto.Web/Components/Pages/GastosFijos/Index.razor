@@ -53,7 +53,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var gasto in gastosFijos)
+                            @foreach (var gasto in GastosFijosPaginados)
                             {
                                 <tr>
                                     <td class="px-4 fw-medium">@gasto.Concepto</td>
@@ -88,8 +88,41 @@
                                 </tr>
                             }
                         </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td class="px-4 fw-bold text-end">Total:</td>
+                                <td class="fw-bold text-success">@gastosFijos.Sum(g => g.Monto).ToString("C2")</td>
+                                <td colspan="5"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
+
+                @if (TotalPaginas >= 1)
+                {
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="text-muted small">
+                            Mostrando @GastosFijosPaginados.Count() de @gastosFijos.Count() registros
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="() => CambiarPagina(paginaActual - 1)">Anterior</button>
+                                </li>
+                                @for (int i = 1; i <= TotalPaginas; i++)
+                                {
+                                    var pageIndex = i;
+                                    <li class="page-item @(paginaActual == pageIndex ? "active" : "")">
+                                        <button class="page-link" @onclick="() => CambiarPagina(pageIndex)">@pageIndex</button>
+                                    </li>
+                                }
+                                <li class="page-item @(paginaActual == TotalPaginas ? "disabled" : "")">
+                                    <button class="page-link" @onclick="() => CambiarPagina(paginaActual + 1)">Siguiente</button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
             }
         </div>
     </div>
@@ -131,6 +164,24 @@
     private bool cargando = true;
     private GastoFijoDto? gastoAEliminar;
     private bool eliminando = false;
+
+    // Paginación
+    private int paginaActual = 1;
+    private int itemsPorPagina = 10;
+    
+    private IEnumerable<GastoFijoDto> GastosFijosPaginados => 
+        gastosFijos.Skip((paginaActual - 1) * itemsPorPagina).Take(itemsPorPagina);
+
+    private int TotalPaginas => 
+        (int)Math.Ceiling(gastosFijos.Count() / (double)itemsPorPagina);
+
+    private void CambiarPagina(int nuevaPagina)
+    {
+        if (nuevaPagina >= 1 && nuevaPagina <= TotalPaginas)
+        {
+            paginaActual = nuevaPagina;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
