@@ -10,7 +10,6 @@ Actúa como **desarrollador full stack senior especializado en React Native**. T
 
 No debe quedar ninguna funcionalidad fuera. La app final debe cubrir el 100% de los módulos descritos en la sección 5.
 
----
 
 ## 2. Stack tecnológico objetivo
 
